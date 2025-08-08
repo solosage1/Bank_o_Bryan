@@ -64,7 +64,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
           className="max-w-6xl mx-auto"
         >
           {/* Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
@@ -84,7 +84,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Features */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <h2 className="text-3xl font-bold text-gray-900 mb-8">
                 Why Choose Bank o'Bryan?
               </h2>
@@ -98,8 +98,8 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
                     <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex items-start space-x-4">
+                      <CardContent className="p-5">
+                        <div className="flex items-center space-x-4">
                           <div className="flex-shrink-0">
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                               <feature.icon className="w-6 h-6 text-white" />

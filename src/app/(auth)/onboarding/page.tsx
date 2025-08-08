@@ -53,61 +53,47 @@ export default function OnboardingPage() {
     },
   });
 
+  // Ensure no stray autofill or stale state on mount
+  useEffect(() => {
+    form.reset({ familyName: '', timezone: 'America/New_York' });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onSubmit = async (data: FamilyFormData) => {
-    if (!user) return;
+    const isBypass = process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' || (user && user.id === 'e2e-user');
 
     try {
       setIsLoading(true);
       track('family_created', { phase: 'attempt', tz: data.timezone, name_length: data.familyName.length });
 
       // E2E bypass: simulate successful onboarding without backend
-      if (process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1') {
+      if (isBypass) {
         await new Promise((r) => setTimeout(r, 100));
         router.push('/dashboard');
         return;
       }
 
-      // Create family with minimal, schema-stable fields.
-      const primaryPayload = {
-        name: data.familyName,
-        timezone: data.timezone,
-      } as any;
+      if (!user) throw new Error('Not authenticated');
 
-      const { data: family, error: familyError } = await supabase
-        .from('families')
-        .insert([primaryPayload])
-        .select('id')
-        .single();
+      // Use idempotent onboarding RPC to create or fetch family
+      const { data: familyId, error: rpcError } = await supabase.rpc('onboard_family', {
+        p_name: data.familyName,
+        p_timezone: data.timezone,
+      });
 
-      if (familyError) throw familyError;
-      if (!family) throw new Error('Family insert returned no data');
-
-      // Create parent record (minimal fields per PRD schema)
-      const { error: parentError } = await supabase
-        .from('parents')
-        .insert([
-          {
-            family_id: family.id,
-            auth_user_id: user.id,
-            email: user.email ?? '',
-            name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email ?? 'Parent'
-          } as any,
-        ])
-        .select('id')
-        .single();
-
-      if (parentError) throw parentError;
+      if (rpcError) throw rpcError as any;
+      if (!familyId) throw new Error('onboard_family returned no family id');
 
       // Log audit event (non-blocking)
       (async () => {
         try {
           await supabase.rpc('log_audit_event', {
-            p_family_id: family.id,
+            p_family_id: familyId as any,
             p_user_type: 'parent',
             p_user_id: user.id,
             p_action: `Created family \"${data.familyName}\"`,
             p_entity_type: 'family',
-            p_entity_id: family.id,
+            p_entity_id: familyId as any,
             p_metadata: { timezone: data.timezone }
           });
         } catch (rpcError: unknown) {
@@ -116,14 +102,19 @@ export default function OnboardingPage() {
       })();
 
       // Redirect to dashboard
-      track('family_created', { phase: 'success', familyId: family.id });
+      track('family_created', { phase: 'success', familyId });
       router.push('/dashboard');
     } catch (error) {
       console.error('Onboarding error:', error);
-      form.setError('root', {
-        message: error instanceof Error ? error.message : 'Failed to create family'
-      });
-      track('family_created', { phase: 'failure', message: error instanceof Error ? error.message : String(error) });
+      const err: any = error;
+      const details: string[] = [];
+      if (err?.message) details.push(String(err.message));
+      if (err?.code) details.push(`code: ${err.code}`);
+      if (err?.details) details.push(String(err.details));
+      if (err?.hint) details.push(String(err.hint));
+      const message = details.length ? details.join(' — ') : 'Failed to create family';
+      form.setError('root', { message });
+      track('family_created', { phase: 'failure', message, code: err?.code, details: err?.details, hint: err?.hint });
     } finally {
       setIsLoading(false);
     }
@@ -202,6 +193,9 @@ export default function OnboardingPage() {
                     id="familyName"
                     placeholder="e.g., The Johnson Family"
                     className="pl-11 h-12 text-base"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
                     {...form.register('familyName')}
                   />
                 </div>

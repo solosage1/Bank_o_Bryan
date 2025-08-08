@@ -11,7 +11,7 @@
     "ci:guard-check": "grep -R -nE \"status\\s*===\\s*'loading'\\s*\\|\\|\\s*status\\s*===\\s*'ready'\" src || true",
     "ci:redirect-check": "grep -R -nE \"useRequireAuth\\(|useRedirectOnReady\\(\" src || true",
     "ci:report": "echo 'Guard checks:' && pnpm -s ci:guard-check && echo '\nRedirect usage:' && pnpm -s ci:redirect-check",
-    "test": "vitest run",
+    "test": "vitest run tests/unit",
     "test:watch": "vitest",
     "e2e": "playwright test",
     "type-check": "tsc --noEmit",

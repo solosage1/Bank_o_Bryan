@@ -27,3 +27,14 @@
   from = "/index.html"
   to = "/"
   status = 200
+
+# Explicit rewrites for SSR routes as a stopgap for 404s
+[[redirects]]
+  from = "/dashboard*"
+  to = "/.netlify/functions/next"
+  status = 200
+
+[[redirects]]
+  from = "/onboarding*"
+  to = "/.netlify/functions/next"
+  status = 200

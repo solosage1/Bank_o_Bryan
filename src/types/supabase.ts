@@ -443,6 +443,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      onboard_family: {
+        Args: {
+          p_name: string
+          p_timezone: string
+        }
+        Returns: string
+      }
       calculate_daily_interest: {
         Args: {
           account_balance: number
