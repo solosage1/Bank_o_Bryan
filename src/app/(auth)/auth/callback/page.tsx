@@ -9,25 +9,41 @@ export default function AuthCallbackPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const completeSignIn = async () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const code = searchParams.get('code');
-      const providerError = searchParams.get('error_description') || searchParams.get('error');
-
-      if (providerError) {
-        setErrorMessage(providerError);
-        return;
-      }
-
-      // Case 1: PKCE flow with code param
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          setErrorMessage(error.message);
+    const completeSignIn = async (): Promise<void> => {
+      try {
+        // If session already exists (e.g., Supabase auto-detected from URL hash), leave immediately
+        const { data: initial } = await supabase.auth.getSession();
+        if (initial.session) {
+          // Clean URL of any hash/query noise
+          if (typeof window !== 'undefined') {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+          router.replace('/');
           return;
         }
-      } else {
-        // Case 2: Implicit flow with hash params (#access_token=...)
+
+        const searchParams = new URLSearchParams(window.location.search);
+        const providerError = searchParams.get('error_description') || searchParams.get('error');
+        if (providerError) {
+          setErrorMessage(providerError);
+          return;
+        }
+
+        const code = searchParams.get('code');
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            setErrorMessage(error.message);
+            return;
+          }
+          if (typeof window !== 'undefined') {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+          router.replace('/');
+          return;
+        }
+
+        // Implicit flow with hash params (#access_token=...)
         const hash = typeof window !== 'undefined' ? window.location.hash : '';
         if (hash && hash.startsWith('#')) {
           const hashParams = new URLSearchParams(hash.slice(1));
@@ -39,11 +55,30 @@ export default function AuthCallbackPage() {
               setErrorMessage(error.message);
               return;
             }
+            if (typeof window !== 'undefined') {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            router.replace('/');
+            return;
           }
         }
-      }
 
-      router.replace('/');
+        // Fallback: give Supabase a moment to auto-detect and then proceed or show a helpful error
+        setTimeout(async () => {
+          const { data } = await supabase.auth.getSession();
+          if (data.session) {
+            if (typeof window !== 'undefined') {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            router.replace('/');
+          } else {
+            setErrorMessage('Authentication timed out. Please try signing in again.');
+          }
+        }, 500);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Authentication failed';
+        setErrorMessage(message);
+      }
     };
 
     void completeSignIn();
@@ -51,8 +86,21 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="text-gray-700">
-        {errorMessage ? `Authentication error: ${errorMessage}` : 'Finishing sign-in...'}
+      <div className="text-gray-700 space-y-4 text-center">
+        {errorMessage ? (
+          <>
+            <div>{`Authentication error: ${errorMessage}`}</div>
+            <a
+              href="/"
+              className="inline-block text-blue-600 underline"
+              aria-label="Return to sign-in"
+            >
+              Return to sign-in
+            </a>
+          </>
+        ) : (
+          'Finishing sign-in...'
+        )}
       </div>
     </div>
   );

@@ -200,27 +200,72 @@ CREATE TRIGGER update_accounts_updated_at
 DO $$
 DECLARE fam_id uuid;
 DECLARE parent_row RECORD;
-DECLARE child_id uuid;
+DECLARE v_child_id uuid;
 BEGIN
-  -- Create or fetch family
-  INSERT INTO families (name, timezone, settings)
-  VALUES ('Demo Family', 'America/New_York', '{"currency":"USD","sibling_visibility":true}'::jsonb)
-  ON CONFLICT DO NOTHING;
+  -- Create or fetch family (handle legacy schemas without settings column)
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'families' AND column_name = 'settings'
+  ) THEN
+    INSERT INTO families (name, timezone, settings)
+    VALUES ('Demo Family', 'America/New_York', '{"currency":"USD","sibling_visibility":true}'::jsonb)
+    ON CONFLICT DO NOTHING;
+  ELSE
+    INSERT INTO families (name, timezone)
+    VALUES ('Demo Family', 'America/New_York')
+    ON CONFLICT DO NOTHING;
+  END IF;
   SELECT id INTO fam_id FROM families WHERE name = 'Demo Family' LIMIT 1;
 
-  -- Create parent placeholder; auth_user_id nullable if auth not present
-  INSERT INTO parents (family_id, email, name)
-  VALUES (fam_id, 'demo.parent@example.com', 'Demo Parent')
-  ON CONFLICT (email) DO NOTHING;
+  -- Create parent placeholder only if legacy columns exist
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'parents' AND column_name = 'email'
+  ) AND EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'parents' AND column_name = 'name'
+  ) THEN
+    INSERT INTO parents (family_id, email, name)
+    VALUES (fam_id, 'demo.parent@example.com', 'Demo Parent')
+    ON CONFLICT (email) DO NOTHING;
+  END IF;
 
-  -- Create child
-  INSERT INTO children (family_id, name, age, nickname)
-  VALUES (fam_id, 'Avery', 12, 'Ave')
-  ON CONFLICT DO NOTHING;
-  SELECT id INTO child_id FROM children WHERE family_id = fam_id AND name = 'Avery' LIMIT 1;
+  -- Create child with columns available in the current schema
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'children' AND column_name = 'age'
+  ) THEN
+    INSERT INTO children (family_id, name, age, nickname)
+    VALUES (fam_id, 'Avery', 12, 'Ave')
+    ON CONFLICT DO NOTHING;
+  ELSIF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'children' AND column_name = 'nickname'
+  ) THEN
+    INSERT INTO children (family_id, name, nickname)
+    VALUES (fam_id, 'Avery', 'Ave')
+    ON CONFLICT DO NOTHING;
+  ELSE
+    INSERT INTO children (family_id, name)
+    VALUES (fam_id, 'Avery')
+    ON CONFLICT DO NOTHING;
+  END IF;
+  SELECT id INTO v_child_id FROM children WHERE family_id = fam_id AND name = 'Avery' LIMIT 1;           
 
-  -- Create account if missing
-  INSERT INTO accounts (child_id, balance, total_earned)
-  VALUES (child_id, 0.00, 0.00)
-  ON CONFLICT (child_id) DO NOTHING;
+  -- Create account if missing, handling schema differences
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'accounts' AND column_name = 'balance'
+  ) THEN
+    INSERT INTO accounts (child_id, balance, total_earned)
+    SELECT v_child_id, 0.00, 0.00
+    WHERE NOT EXISTS (SELECT 1 FROM accounts WHERE child_id = v_child_id);
+  ELSIF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'accounts' AND column_name = 'current_balance_cents'
+  ) THEN
+    INSERT INTO accounts (child_id, current_balance_cents, as_of)
+    SELECT v_child_id, 0, now()
+    WHERE NOT EXISTS (SELECT 1 FROM accounts WHERE child_id = v_child_id);
+  END IF;                                                                                               
 END $$;
