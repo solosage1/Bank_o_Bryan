@@ -7,6 +7,6 @@ enabled = true
 major_version = 15
 
 [studio]
-port = 54324
+port = 54325
 
 

@@ -38,3 +38,9 @@
   from = "/onboarding*"
   to = "/.netlify/functions/next"
   status = 200
+
+# Catch-all rewrite to ensure all App Router routes are served by the Next runtime
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/next"
+  status = 200

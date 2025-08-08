@@ -145,7 +145,20 @@ BEGIN
   END IF;
 END $$;
 CREATE INDEX IF NOT EXISTS idx_audit_log_family_id ON audit_log(family_id);
-CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'audit_log' AND column_name = 'created_at'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC);
+  ELSIF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'audit_log' AND column_name = 'occurred_at'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(occurred_at DESC);
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id);
 
 -- Enable Row Level Security
@@ -168,17 +181,25 @@ CREATE POLICY "Parents can manage goals for their family children"
   );
 
 -- RLS Policies for rewards
-CREATE POLICY "Parents can manage rewards for their family"
-  ON rewards
-  FOR ALL
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM parents 
-      WHERE parents.family_id = rewards.family_id 
-      AND parents.auth_user_id = auth.uid()
-    )
-  );
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' AND table_name = 'rewards' AND column_name = 'family_id'
+  ) THEN
+    CREATE POLICY "Parents can manage rewards for their family"
+      ON rewards
+      FOR ALL
+      TO authenticated
+      USING (
+        EXISTS (
+          SELECT 1 FROM parents 
+          WHERE parents.family_id = rewards.family_id 
+          AND parents.auth_user_id = auth.uid()
+        )
+      );
+  END IF;
+END $$;
 
 -- RLS Policies for audit_log (insert and read only)
 CREATE POLICY "Parents can view audit logs for their family"
@@ -199,40 +220,53 @@ CREATE POLICY "System can insert audit logs"
   TO authenticated, service_role
   WITH CHECK (true);
 
--- Function to update goal progress based on account balance
-CREATE OR REPLACE FUNCTION update_goal_progress()
-RETURNS TRIGGER AS $$
-DECLARE
-  goal_record RECORD;
+DO $$
 BEGIN
-  -- Update progress for all active goals for this child
-  FOR goal_record IN
-    SELECT g.id, g.target_amount, a.balance
-    FROM goals g
-    JOIN accounts a ON a.child_id = g.child_id
-    WHERE g.child_id = (
-      SELECT child_id FROM accounts WHERE id = NEW.account_id
-    )
-    AND g.is_completed = false
-  LOOP
-    -- Update progress (limited to target amount)
-    UPDATE goals
-    SET 
-      current_progress = LEAST(goal_record.balance, goal_record.target_amount),
-      is_completed = (goal_record.balance >= goal_record.target_amount),
-      updated_at = now()
-    WHERE id = goal_record.id;
-  END LOOP;
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' AND table_name = 'accounts' AND column_name = 'balance'
+  ) THEN
+    EXECUTE $ddl$
+      CREATE OR REPLACE FUNCTION update_goal_progress()
+      RETURNS TRIGGER AS $fn$
+      DECLARE
+        goal_record RECORD;
+      BEGIN
+        FOR goal_record IN
+          SELECT g.id, g.target_amount, a.balance
+          FROM goals g
+          JOIN accounts a ON a.child_id = g.child_id
+          WHERE g.child_id = (
+            SELECT child_id FROM accounts WHERE id = NEW.account_id
+          )
+          AND g.is_completed = false
+        LOOP
+          UPDATE goals
+          SET 
+            current_progress = LEAST(goal_record.balance, goal_record.target_amount),
+            is_completed = (goal_record.balance >= goal_record.target_amount),
+            updated_at = now()
+          WHERE id = goal_record.id;
+        END LOOP;
+        RETURN NEW;
+      END;
+      $fn$ LANGUAGE plpgsql;
+    $ddl$;
+  END IF;
+END $$;
 
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to update goal progress when account balance changes
-CREATE TRIGGER trigger_update_goal_progress
-  AFTER UPDATE OF balance ON accounts
-  FOR EACH ROW
-  EXECUTE FUNCTION update_goal_progress();
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' AND table_name = 'accounts' AND column_name = 'balance'
+  ) THEN
+    CREATE TRIGGER trigger_update_goal_progress
+      AFTER UPDATE OF balance ON accounts
+      FOR EACH ROW
+      EXECUTE FUNCTION update_goal_progress();
+  END IF;
+END $$;
 
 -- Function to log audit events
 CREATE OR REPLACE FUNCTION log_audit_event(
