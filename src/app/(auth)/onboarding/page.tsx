@@ -54,17 +54,17 @@ export default function OnboardingPage() {
     try {
       setIsLoading(true);
 
-      // Create family
+      // Create family (schema expects sibling_visibility boolean)
       const { data: family, error: familyError } = await supabase
         .from('families')
-        .insert([{
-          name: data.familyName,
-          timezone: data.timezone,
-          settings: {
-            currency: 'USD',
-            sibling_visibility: data.siblingVisibility,
-          }
-        }])
+        .insert([
+          {
+            name: data.familyName,
+            timezone: data.timezone,
+            // New schema stores this as a top-level boolean
+            sibling_visibility: data.siblingVisibility as unknown as boolean,
+          } as any,
+        ])
         .select()
         .single();
 
