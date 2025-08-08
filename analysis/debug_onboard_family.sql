@@ -1,0 +1,3 @@
+select n.nspname, p.proname, pg_get_function_identity_arguments(p.oid) as args from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'onboard_family';
+
+select has_function_privilege('authenticated','public.onboard_family(text,text)','EXECUTE') as auth_can_exec, has_function_privilege('anon','public.onboard_family(text,text)','EXECUTE') as anon_can_exec;

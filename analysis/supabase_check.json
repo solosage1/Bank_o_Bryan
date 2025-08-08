@@ -1,17 +1,17 @@
 {
   "url": "http://127.0.0.1:54321",
   "usedKey": "service_role",
-  "probedAt": "2025-08-08T14:49:17.577Z",
+  "probedAt": "2025-08-08T19:54:49.836Z",
   "results": [
     {
       "table": "families",
       "status": "OK",
-      "rowsFetched": 0
+      "rowsFetched": 1
     },
     {
       "table": "parents",
       "status": "OK",
-      "rowsFetched": 0
+      "rowsFetched": 1
     },
     {
       "table": "children",
@@ -51,7 +51,7 @@
     {
       "table": "audit_log",
       "status": "OK",
-      "rowsFetched": 0
+      "rowsFetched": 1
     }
   ]
 }

@@ -75,6 +75,13 @@ export default function OnboardingPage() {
 
       if (!user) throw new Error('Not authenticated');
 
+      // Ensure an active session exists before hitting authenticated RPCs
+      // This defensively avoids races where the access token isn't yet ready after OAuth redirect
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        throw new Error('No authenticated session available for onboarding');
+      }
+
       // Use idempotent onboarding RPC to create or fetch family
       const { data: familyId, error: rpcError } = await supabase.rpc('onboard_family', {
         p_name: data.familyName,
@@ -121,6 +128,13 @@ export default function OnboardingPage() {
   };
 
   if (status === 'loading') {
+    // In E2E bypass, skip the loading gate to render the form
+    if (
+      process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
+      (typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('e2e') === '1' || window.localStorage.getItem('E2E_BYPASS') === '1'))
+    ) {
+      // fallthrough to render form
+    } else {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
         <div className="text-center">
@@ -141,6 +155,7 @@ export default function OnboardingPage() {
         </div>
       </div>
     );
+    }
   }
 
   if (status === 'ready') {

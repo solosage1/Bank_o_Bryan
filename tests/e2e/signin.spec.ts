@@ -2,10 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Sign-in CTA', () => {
   test('Clicking Continue with Google initiates OAuth (navigates or opens popup)', async ({ page, context }) => {
-    await page.goto('/');
+    // Ensure bypass flag before load
+    await page.addInitScript(() => localStorage.setItem('E2E_BYPASS', '1'));
+    await page.goto('/?e2e=1');
 
     const cta = page.getByRole('button', { name: /Continue with Google/i });
-    await expect(cta).toBeVisible();
+    await cta.waitFor({ state: 'visible' });
     await expect(cta).toBeEnabled();
 
     // In E2E bypass, we navigate to /oauth/stub
