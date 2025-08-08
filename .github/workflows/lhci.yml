@@ -1,0 +1,36 @@
+name: Lighthouse CI (Netlify Deploy)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *' # daily at 06:00 UTC
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Lighthouse CI
+        run: npm i -g @lhci/cli@0.13.x
+
+      - name: Collect Lighthouse reports against Netlify
+        run: |
+          mkdir -p analysis/lhci
+          lhci collect \
+            --url=https://thunderous-bublanina-2eaf45.netlify.app/ \
+            --numberOfRuns=3 \
+            --outputPath=analysis/lhci || true
+
+      - name: Upload LHCI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lhci-reports
+          path: analysis/lhci
+
