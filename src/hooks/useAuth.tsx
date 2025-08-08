@@ -15,6 +15,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
+      // Helpful debug signal for single-click verification
+      // eslint-disable-next-line no-console
+      console.info('auth:signInWithGoogle invoked');
       await signInGoogle();
     } catch (error) {
       console.error('Sign in error:', error);

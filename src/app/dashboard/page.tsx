@@ -118,6 +118,18 @@ export default function DashboardPage() {
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading dashboard...</p>
+          <button
+            className="mt-4 px-3 py-2 rounded-md border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+            onClick={async () => {
+              try {
+                await supabase.auth.signOut();
+              } finally {
+                router.replace('/');
+              }
+            }}
+          >
+            Reset session
+          </button>
         </div>
       </div>
     );

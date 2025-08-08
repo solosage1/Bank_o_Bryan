@@ -18,6 +18,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
   const handleSignIn = async () => {
     try {
       setIsLoading(true);
+      console.info('login:clicked');
       await onSignIn();
     } catch (error) {
       console.error('Sign in error:', error);
@@ -137,6 +138,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
                 </CardHeader>
                 <CardContent className="px-8 pb-8">
                   <Button
+                    type="button"
                     onClick={handleSignIn}
                     disabled={isLoading}
                     size="lg"

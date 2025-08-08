@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRedirectOnReady } from '@/hooks/useRedirectOnReady';
 import type { AuthGuardStatus } from '@/hooks/useRequireAuth';
 import { track } from '@/components/analytics/track';
+import { supabase } from '@/lib/supabase';
 
 export default function HomePage() {
   const { user, parent, family, loading, signInWithGoogle } = useAuth();
@@ -41,6 +42,18 @@ export default function HomePage() {
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading Bank o&apos;Bryan...</p>
+          <button
+            className="mt-4 px-3 py-2 rounded-md border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+            onClick={async () => {
+              try {
+                await supabase.auth.signOut();
+              } finally {
+                window.location.assign('/');
+              }
+            }}
+          >
+            Reset session
+          </button>
         </div>
       </div>
     );
