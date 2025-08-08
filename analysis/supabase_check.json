@@ -1,7 +1,7 @@
 {
-  "url": "http://127.0.0.1:54321",
+  "url": "https://smgovvcbpncfsujynzcq.supabase.co",
   "usedKey": "service_role",
-  "probedAt": "2025-08-08T19:54:49.836Z",
+  "probedAt": "2025-08-08T21:40:56.112Z",
   "results": [
     {
       "table": "families",
@@ -11,7 +11,7 @@
     {
       "table": "parents",
       "status": "OK",
-      "rowsFetched": 1
+      "rowsFetched": 0
     },
     {
       "table": "children",
@@ -51,7 +51,7 @@
     {
       "table": "audit_log",
       "status": "OK",
-      "rowsFetched": 1
+      "rowsFetched": 0
     }
   ]
 }
