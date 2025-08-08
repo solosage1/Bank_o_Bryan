@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Settings, LogOut, Users, DollarSign } from 'lucide-react';
 
@@ -13,9 +14,10 @@ import { supabase } from '@/lib/supabase';
 import type { ChildWithAccount } from '@/types';
 
 export default function DashboardPage() {
-  const { parent, family, signOut } = useAuth();
+  const router = useRouter();
+  const { user, parent, family, loading: authLoading, signOut } = useAuth();
   const [children, setChildren] = useState<ChildWithAccount[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
   const [transactionModal, setTransactionModal] = useState<{
     isOpen: boolean;
     childId: string;
@@ -26,7 +28,11 @@ export default function DashboardPage() {
 
   // Fetch children and their accounts
   const fetchChildren = async () => {
-    if (!family) return;
+    if (!family) {
+      // Nothing to fetch; ensure we clear any local fetching state
+      setChildren([]);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -42,16 +48,44 @@ export default function DashboardPage() {
       setChildren(data || []);
     } catch (error) {
       console.error('Error fetching children:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
+  // Route guarding based on auth state
   useEffect(() => {
-    if (family) {
-      fetchChildren();
+    if (authLoading) return;
+
+    if (!user) {
+      router.replace('/');
+      return;
     }
-  }, [family]);
+
+    if (user && !family) {
+      router.replace('/onboarding');
+    }
+  }, [authLoading, user, family, router]);
+
+  // Fetch data when a family context exists (and auth is resolved)
+  useEffect(() => {
+    if (authLoading) return;
+
+    const run = async () => {
+      setIsFetching(true);
+      try {
+        await fetchChildren();
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    // If there is no family (e.g., not onboarded), we still want to stop fetching state
+    if (!family) {
+      setIsFetching(false);
+      return;
+    }
+
+    run();
+  }, [authLoading, family]);
 
   const openTransactionModal = (
     childId: string, 
@@ -76,7 +110,7 @@ export default function DashboardPage() {
     fetchChildren(); // Refresh data
   };
 
-  if (loading) {
+  if (authLoading || isFetching) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
         <div className="text-center">

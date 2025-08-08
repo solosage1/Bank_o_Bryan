@@ -5,31 +5,48 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type Txn = { id: string; type: string; amount_cents: number; occurred_at: string; note: string };
 
 export default function HistoryPage() {
+  const guard = useRequireAuth();
   const params = useParams();
   const childId = params?.id as string;
   const [transactions, setTransactions] = useState<Txn[]>([]);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
 
   useEffect(() => {
+    if (guard !== 'ready') return;
+    let cancelled = false;
     (async () => {
+      setIsFetching(true);
       // find account by child
       const { data: account } = await supabase
         .from('accounts')
         .select('id')
         .eq('child_id', childId)
         .maybeSingle();
-      if (!account) return;
-      const { data } = await supabase
-        .from('transactions_prd')
-        .select('id, type, amount_cents, occurred_at, note')
+      if (!account) { setIsFetching(false); return; }
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('id, type, amount, transaction_date, description')
         .eq('account_id', account.id)
-        .order('occurred_at', { ascending: false });
-      setTransactions((data as Txn[]) || []);
+        .order('transaction_date', { ascending: false });
+      if (!error && !cancelled) {
+        const mapped: Txn[] = (data || []).map((t: any) => ({
+          id: t.id,
+          type: t.type,
+          amount_cents: Math.round((t.amount || 0) * 100),
+          occurred_at: t.transaction_date,
+          note: t.description || ''
+        }));
+        setTransactions(mapped);
+      }
+      setIsFetching(false);
     })();
-  }, [childId]);
+    return () => { cancelled = true; };
+  }, [childId, guard]);
 
   const toCurrency = (cents: number) => (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
@@ -40,6 +57,9 @@ export default function HistoryPage() {
           <CardTitle>History</CardTitle>
         </CardHeader>
         <CardContent>
+          {isFetching && (
+            <div className="text-gray-600 text-sm mb-2">Loading...</div>
+          )}
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>

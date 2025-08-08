@@ -5,29 +5,37 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type Point = { date: string; balance_cents: number };
 
 export default function ProjectionPage() {
+  const guard = useRequireAuth();
   const params = useParams();
   const childId = params?.id as string;
   const [points, setPoints] = useState<Point[]>([]);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
 
   useEffect(() => {
+    if (guard !== 'ready') return;
+    let cancelled = false;
     (async () => {
+      setIsFetching(true);
       const { data: account } = await supabase
         .from('accounts')
-        .select('id, current_balance_cents')
+        .select('id')
         .eq('child_id', childId)
         .maybeSingle();
-      if (!account) return;
+      if (!account) { setIsFetching(false); return; }
       const url = new URL('/functions/v1/projection', window.location.origin);
       url.searchParams.set('account_id', account.id);
       const res = await fetch(url.toString());
       const json = await res.json();
-      setPoints(json.baseline || []);
+      if (!cancelled) setPoints(json.baseline || []);
+      setIsFetching(false);
     })();
-  }, [childId]);
+    return () => { cancelled = true; };
+  }, [childId, guard]);
 
   return (
     <div className="p-4">
@@ -36,6 +44,9 @@ export default function ProjectionPage() {
           <CardTitle>Projection (12 months, daily)</CardTitle>
         </CardHeader>
         <CardContent>
+          {isFetching && (
+            <div className="text-gray-600 text-sm mb-2">Loading...</div>
+          )}
           <div className="text-sm text-gray-600 mb-2">Points: {points.length}</div>
           <div className="max-h-64 overflow-auto border rounded">
             <table className="min-w-full text-sm">

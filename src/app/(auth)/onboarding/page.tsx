@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supabase } from '@/lib/supabase';
 
 const familySchema = z.object({
@@ -35,6 +36,7 @@ const timezones = [
 
 export default function OnboardingPage() {
   const { user } = useAuth();
+  const status = useRequireAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -103,6 +105,19 @@ export default function OnboardingPage() {
       setIsLoading(false);
     }
   };
+
+  if (status === 'loading' || status === 'ready') {
+    // While auth is resolving or already onboarded (redirecting), avoid flicker
+    // Note: when 'ready', useRequireAuth will have redirected away from this page.
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Preparing onboarding...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">

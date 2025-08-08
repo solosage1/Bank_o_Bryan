@@ -5,10 +5,12 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type Point = { date: string; balance_cents: number };
 
 export default function PlaygroundPage() {
+  const guard = useRequireAuth();
   const params = useParams();
   const childId = params?.id as string;
   const [baseline, setBaseline] = useState<Point[]>([]);
@@ -16,23 +18,29 @@ export default function PlaygroundPage() {
   const [amount, setAmount] = useState<number>(1000);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [accountId, setAccountId] = useState<string | null>(null);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
 
   useEffect(() => {
+    if (guard !== 'ready') return;
+    let cancelled = false;
     (async () => {
+      setIsFetching(true);
       const { data: account } = await supabase
         .from('accounts')
         .select('id')
         .eq('child_id', childId)
         .maybeSingle();
-      if (!account) return;
+      if (!account) { setIsFetching(false); return; }
       setAccountId(account.id);
       const url = new URL('/functions/v1/projection', window.location.origin);
       url.searchParams.set('account_id', account.id);
       const res = await fetch(url.toString());
       const json = await res.json();
-      setBaseline(json.baseline || []);
+      if (!cancelled) setBaseline(json.baseline || []);
+      setIsFetching(false);
     })();
-  }, [childId]);
+    return () => { cancelled = true; };
+  }, [childId, guard]);
 
   const runSim = async (kind: 'deposit'|'withdrawal') => {
     if (!accountId) return;
@@ -59,6 +67,9 @@ export default function PlaygroundPage() {
           <CardTitle>Projection Playground</CardTitle>
         </CardHeader>
         <CardContent>
+          {isFetching && (
+            <div className="text-gray-600 text-sm mb-2">Loading...</div>
+          )}
           <div className="flex flex-col md:flex-row md:items-end gap-3 mb-4">
             <div>
               <label htmlFor="amount" className="block text-sm font-medium mb-1">Amount (cents)</label>
