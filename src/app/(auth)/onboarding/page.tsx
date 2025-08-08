@@ -20,7 +20,6 @@ import { supabase } from '@/lib/supabase';
 const familySchema = z.object({
   familyName: z.string().min(1, 'Family name is required').max(50, 'Family name too long'),
   timezone: z.string().min(1, 'Timezone is required'),
-  siblingVisibility: z.boolean().default(true),
 });
 
 type FamilyFormData = z.infer<typeof familySchema>;
@@ -44,7 +43,6 @@ export default function OnboardingPage() {
     defaultValues: {
       familyName: '',
       timezone: 'America/New_York',
-      siblingVisibility: true,
     },
   });
 
@@ -54,26 +52,25 @@ export default function OnboardingPage() {
     try {
       setIsLoading(true);
 
-      // Create family (schema expects sibling_visibility boolean)
+      // Create family with minimal, schema-stable fields.
+      const primaryPayload = {
+        name: data.familyName,
+        timezone: data.timezone,
+      } as any;
+
       const { data: family, error: familyError } = await supabase
         .from('families')
-        .insert([
-          {
-            name: data.familyName,
-            timezone: data.timezone,
-            // New schema stores this as a top-level boolean
-            sibling_visibility: data.siblingVisibility as unknown as boolean,
-          } as any,
-        ])
+        .insert([primaryPayload])
         .select('id')
         .single();
 
       if (familyError) throw familyError;
+      if (!family) throw new Error('Family insert returned no data');
 
       // Create parent record
       const { error: parentError } = await supabase
         .from('parents')
-        .insert([{
+        .insert([{ 
           family_id: family.id,
           email: user.email!,
           name: user.user_metadata.full_name || user.email!.split('@')[0],
@@ -90,10 +87,7 @@ export default function OnboardingPage() {
         p_action: `Created family "${data.familyName}"`,
         p_entity_type: 'family',
         p_entity_id: family.id,
-        p_metadata: {
-          timezone: data.timezone,
-          sibling_visibility: data.siblingVisibility
-        }
+        p_metadata: { timezone: data.timezone }
       });
 
       // Redirect to dashboard
@@ -185,21 +179,7 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                <div className="flex-1">
-                  <Label htmlFor="siblingVisibility" className="text-base font-medium text-gray-900">
-                    Sibling Visibility
-                  </Label>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Allow children to see their siblings' balances and activities
-                  </p>
-                </div>
-                <Switch
-                  id="siblingVisibility"
-                  checked={form.watch('siblingVisibility')}
-                  onCheckedChange={(checked) => form.setValue('siblingVisibility', checked)}
-                />
-              </div>
+              {/* Sibling visibility is always on by policy; control removed for simplicity. */}
 
               {form.formState.errors.root && (
                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
