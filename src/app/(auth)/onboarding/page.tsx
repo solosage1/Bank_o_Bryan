@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useRedirectOnReady } from '@/hooks/useRedirectOnReady';
 import { supabase } from '@/lib/supabase';
 
 const familySchema = z.object({
@@ -39,6 +40,9 @@ export default function OnboardingPage() {
   const status = useRequireAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  // If the user is already fully onboarded, leave this page immediately.
+  useRedirectOnReady(status, '/dashboard');
 
   const form = useForm<FamilyFormData>({
     resolver: zodResolver(familySchema),
@@ -106,14 +110,24 @@ export default function OnboardingPage() {
     }
   };
 
-  if (status === 'loading' || status === 'ready') {
-    // While auth is resolving or already onboarded (redirecting), avoid flicker
-    // Note: when 'ready', useRequireAuth will have redirected away from this page.
+  if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Preparing onboarding...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'ready') {
+    // Short transition UI while the router performs the replace
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Redirecting to dashboard...</p>
         </div>
       </div>
     );

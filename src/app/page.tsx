@@ -1,31 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { useAuth } from '@/hooks/useAuth';
+import { useRedirectOnReady } from '@/hooks/useRedirectOnReady';
+import type { AuthGuardStatus } from '@/hooks/useRequireAuth';
 
 export default function HomePage() {
   const { user, parent, family, loading, signInWithGoogle } = useAuth();
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Derive a guard-like status locally so we can reuse redirect helpers
+  const status: AuthGuardStatus = useMemo(() => {
+    if (loading) return 'loading';
+    if (!user) return 'unauthenticated';
+    if (user && !family) return 'needsOnboarding';
+    return 'ready';
+  }, [loading, user, family]);
+
+  // Auto-leave the home/login page when fully ready
+  useRedirectOnReady(status, '/dashboard');
+
   useEffect(() => {
     if (!loading) {
       setIsInitialized(true);
-
-      // Defer navigation slightly to let initial client hydration complete
-      // This avoids staying stuck on the loading screen in some SSR/CDN setups
-      const t = setTimeout(() => {
-        if (user && parent && family) {
-          router.push('/dashboard');
-        } else if (user && !parent) {
-          router.push('/onboarding');
-        }
-      }, 0);
-      return () => clearTimeout(t);
+      if (user && !family) {
+        // Authenticated but not onboarded: send to onboarding
+        router.replace('/onboarding');
+      }
     }
-  }, [user, parent, family, loading, router]);
+  }, [loading, user, family, router]);
 
   if (loading || !isInitialized) {
     return (
