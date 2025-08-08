@@ -10,6 +10,7 @@ returns table(interest_micros bigint)
 language plpgsql as $$
 declare
   v_micros bigint := 0;
+  v record;
 begin
   for v in (
     select lower_bound_cents, upper_bound_cents, apr_bps
@@ -17,7 +18,6 @@ begin
     where (effective_from <= date) and (effective_to is null or effective_to >= date)
     order by lower_bound_cents
   ) loop
-    perform 1;
     v_micros := v_micros + cast(greatest(0, least(base_cents, coalesce(v.upper_bound_cents, 9223372036854775807)) - v.lower_bound_cents) as numeric)
                  * (v.apr_bps::numeric / 10000 / 365) * 1000000;
   end loop;
@@ -94,6 +94,7 @@ declare
   v_cents int;
   v_total_micros bigint;
   r record;
+  d record;
 begin
   select current_balance_cents into v_principal from accounts where id = account_id for update;
   -- Remove interest postings from anchor forward
