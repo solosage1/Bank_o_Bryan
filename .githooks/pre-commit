@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Prevent committing secrets; run gitleaks protect on staged files
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --no-banner || {
+    echo "Secrets detected by gitleaks. Commit aborted." >&2
+    exit 1
+  }
+fi

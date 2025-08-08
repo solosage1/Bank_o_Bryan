@@ -221,3 +221,8 @@ For issues and questions:
 ---
 
 **Bank o'Bryan** - Teaching kids financial responsibility through play! 🎯💰
+## 🛠️ PRD Schema Update (2025-08-07)
+
+A new migration file `supabase/migrations/20250807_prd_mvp.sql` introduces the `families`, `parents`, `children`, `accounts`, `transactions_prd`, `interest_runs_prd`, `interest_tiers_prd`, `goals`, `rewards` and `audit_log` tables to align the database with the Product Requirements Document (PRD).  Apply this migration after linking your Supabase project.  Existing legacy tables (`interest_tiers`, `transactions`, `interest_runs`) are left untouched for backward compatibility.
+
+> **Security note**: `.env.local` must never be committed to source control.  The service role key grants admin access to your Supabase database and should only be loaded at runtime via your deployment platform’s secrets manager.
