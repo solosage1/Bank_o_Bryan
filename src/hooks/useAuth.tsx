@@ -34,6 +34,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refreshProfile = async () => {
+    if (!user) return;
+    try {
+      await fetchParentAndFamily(user.id);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error refreshing profile:', error);
+    }
+  };
+
   const fetchParentAndFamily = async (userId: string) => {
     try {
       const { data: parentData, error: parentError } = await supabase
@@ -120,7 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     family,
     loading,
     signInWithGoogle,
-    signOut
+    signOut,
+    refreshProfile
   };
 
   return (

@@ -6,6 +6,7 @@ import { LoginPage } from '@/components/auth/LoginPage';
 import { useAuth } from '@/hooks/useAuth';
 import { useRedirectOnReady } from '@/hooks/useRedirectOnReady';
 import type { AuthGuardStatus } from '@/hooks/useRequireAuth';
+import { track } from '@/components/analytics/track';
 
 export default function HomePage() {
   const { user, parent, family, loading, signInWithGoogle } = useAuth();
@@ -28,6 +29,7 @@ export default function HomePage() {
       setIsInitialized(true);
       if (user && !family) {
         // Authenticated but not onboarded: send to onboarding
+        track('projection_viewed', { note: 'root_redirect_to_onboarding' });
         router.replace('/onboarding');
       }
     }

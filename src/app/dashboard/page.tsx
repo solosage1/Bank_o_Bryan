@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { BalanceTicker } from '@/components/banking/BalanceTicker';
 import { TransactionModal } from '@/components/banking/TransactionModal';
 import { useAuth } from '@/hooks/useAuth';
+import { track } from '@/components/analytics/track';
 import { supabase } from '@/lib/supabase';
 import type { ChildWithAccount } from '@/types';
 
@@ -61,6 +62,7 @@ export default function DashboardPage() {
     }
 
     if (user && !family) {
+      track('projection_viewed', { note: 'redirect_to_onboarding_due_to_missing_family' });
       router.replace('/onboarding');
     }
   }, [authLoading, user, family, router]);
@@ -116,6 +118,23 @@ export default function DashboardPage() {
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Graceful state: signed-in but no family (should have been redirected but in case guard missed)
+  if (user && !family) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-700 mb-4">Your account needs onboarding before viewing the dashboard.</p>
+          <button
+            className="px-4 py-2 rounded-md bg-blue-600 text-white"
+            onClick={() => router.replace('/onboarding')}
+          >
+            Go to Onboarding
+          </button>
         </div>
       </div>
     );

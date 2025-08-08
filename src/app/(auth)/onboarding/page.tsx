@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useRedirectOnReady } from '@/hooks/useRedirectOnReady';
 import { supabase } from '@/lib/supabase';
+import { track } from '@/components/analytics/track';
 
 const familySchema = z.object({
   familyName: z.string().min(1, 'Family name is required').max(50, 'Family name too long'),
@@ -57,6 +58,7 @@ export default function OnboardingPage() {
 
     try {
       setIsLoading(true);
+      track('family_created', { phase: 'attempt', tz: data.timezone, name_length: data.familyName.length });
 
       // E2E bypass: simulate successful onboarding without backend
       if (process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1') {
@@ -87,6 +89,8 @@ export default function OnboardingPage() {
           {
             family_id: family.id,
             auth_user_id: user.id,
+            email: user.email ?? '',
+            name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email ?? 'Parent'
           } as any,
         ])
         .select('id')
@@ -112,12 +116,14 @@ export default function OnboardingPage() {
       })();
 
       // Redirect to dashboard
+      track('family_created', { phase: 'success', familyId: family.id });
       router.push('/dashboard');
     } catch (error) {
       console.error('Onboarding error:', error);
       form.setError('root', {
         message: error instanceof Error ? error.message : 'Failed to create family'
       });
+      track('family_created', { phase: 'failure', message: error instanceof Error ? error.message : String(error) });
     } finally {
       setIsLoading(false);
     }
