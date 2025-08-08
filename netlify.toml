@@ -8,6 +8,11 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[build.environment]
+  NPM_FLAGS = "--no-fund --no-audit"
+  NPM_CONFIG_FUND = "false"
+  NPM_CONFIG_AUDIT = "false"
+
 [[headers]]
   for = "/*"
   [headers.values]
