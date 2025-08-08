@@ -1,0 +1,12 @@
+project_id = "smgovvcbpncfsujynzcq"
+
+[api]
+enabled = true
+
+[db]
+major_version = 15
+
+[studio]
+port = 54324
+
+

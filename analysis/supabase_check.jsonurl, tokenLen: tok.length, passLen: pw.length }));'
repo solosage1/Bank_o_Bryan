@@ -1,0 +1,72 @@
+{
+  "url": "https://smgovvcbpncfsujynzcq.supabase.co",
+  "usedKey": "service_role",
+  "probedAt": "2025-08-08T03:54:47.971Z",
+  "results": [
+    {
+      "table": "families",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.families' in the schema cache"
+    },
+    {
+      "table": "parents",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.parents' in the schema cache"
+    },
+    {
+      "table": "children",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.children' in the schema cache"
+    },
+    {
+      "table": "accounts",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.accounts' in the schema cache"
+    },
+    {
+      "table": "interest_tiers",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.interest_tiers' in the schema cache"
+    },
+    {
+      "table": "interest_tiers_prd",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.interest_tiers_prd' in the schema cache"
+    },
+    {
+      "table": "transactions",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.transactions' in the schema cache"
+    },
+    {
+      "table": "transactions_prd",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.transactions_prd' in the schema cache"
+    },
+    {
+      "table": "interest_runs",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.interest_runs' in the schema cache"
+    },
+    {
+      "table": "interest_runs_prd",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.interest_runs_prd' in the schema cache"
+    },
+    {
+      "table": "goals",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.goals' in the schema cache"
+    },
+    {
+      "table": "rewards",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.rewards' in the schema cache"
+    },
+    {
+      "table": "audit_log",
+      "status": "ERROR",
+      "message": "Could not find the table 'public.audit_log' in the schema cache"
+    }
+  ]
+}

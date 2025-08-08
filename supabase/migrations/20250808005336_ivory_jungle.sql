@@ -92,7 +92,15 @@ CREATE INDEX IF NOT EXISTS idx_parents_family_id ON parents(family_id);
 CREATE INDEX IF NOT EXISTS idx_parents_auth_user_id ON parents(auth_user_id);
 CREATE INDEX IF NOT EXISTS idx_children_family_id ON children(family_id);
 CREATE INDEX IF NOT EXISTS idx_accounts_child_id ON accounts(child_id);
-CREATE INDEX IF NOT EXISTS idx_accounts_last_interest_date ON accounts(last_interest_date);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' AND table_name = 'accounts' AND column_name = 'last_interest_date'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_accounts_last_interest_date ON accounts(last_interest_date);
+  END IF;
+END $$;
 
 -- Enable Row Level Security
 ALTER TABLE families ENABLE ROW LEVEL SECURITY;
@@ -187,3 +195,32 @@ CREATE TRIGGER update_accounts_updated_at
   BEFORE UPDATE ON accounts
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- Seed a sample family/parent/child/account for smoke testing (no-op on conflict)
+DO $$
+DECLARE fam_id uuid;
+DECLARE parent_row RECORD;
+DECLARE child_id uuid;
+BEGIN
+  -- Create or fetch family
+  INSERT INTO families (name, timezone, settings)
+  VALUES ('Demo Family', 'America/New_York', '{"currency":"USD","sibling_visibility":true}'::jsonb)
+  ON CONFLICT DO NOTHING;
+  SELECT id INTO fam_id FROM families WHERE name = 'Demo Family' LIMIT 1;
+
+  -- Create parent placeholder; auth_user_id nullable if auth not present
+  INSERT INTO parents (family_id, email, name)
+  VALUES (fam_id, 'demo.parent@example.com', 'Demo Parent')
+  ON CONFLICT (email) DO NOTHING;
+
+  -- Create child
+  INSERT INTO children (family_id, name, age, nickname)
+  VALUES (fam_id, 'Avery', 12, 'Ave')
+  ON CONFLICT DO NOTHING;
+  SELECT id INTO child_id FROM children WHERE family_id = fam_id AND name = 'Avery' LIMIT 1;
+
+  -- Create account if missing
+  INSERT INTO accounts (child_id, balance, total_earned)
+  VALUES (child_id, 0.00, 0.00)
+  ON CONFLICT (child_id) DO NOTHING;
+END $$;

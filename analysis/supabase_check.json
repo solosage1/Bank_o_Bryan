@@ -1,0 +1,57 @@
+{
+  "url": "https://smgovvcbpncfsujynzcq.supabase.co",
+  "usedKey": "service_role",
+  "probedAt": "2025-08-08T04:13:44.395Z",
+  "results": [
+    {
+      "table": "families",
+      "status": "OK",
+      "rowsFetched": 0
+    },
+    {
+      "table": "parents",
+      "status": "OK",
+      "rowsFetched": 0
+    },
+    {
+      "table": "children",
+      "status": "OK",
+      "rowsFetched": 0
+    },
+    {
+      "table": "accounts",
+      "status": "OK",
+      "rowsFetched": 0
+    },
+    {
+      "table": "interest_tiers",
+      "status": "OK",
+      "rowsFetched": 1
+    },
+    {
+      "table": "transactions",
+      "status": "OK",
+      "rowsFetched": 0
+    },
+    {
+      "table": "interest_runs",
+      "status": "OK",
+      "rowsFetched": 0
+    },
+    {
+      "table": "goals",
+      "status": "OK",
+      "rowsFetched": 0
+    },
+    {
+      "table": "rewards",
+      "status": "OK",
+      "rowsFetched": 0
+    },
+    {
+      "table": "audit_log",
+      "status": "OK",
+      "rowsFetched": 0
+    }
+  ]
+}

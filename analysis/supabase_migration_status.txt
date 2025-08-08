@@ -1,0 +1,9 @@
+Supabase CLI login requires a token. Export SUPABASE_ACCESS_TOKEN to proceed non-interactively.
+{"url":"https://smgovvcbpncfsujynzcq.supabase.co","project_ref":"smgovvcbpncfsujynzcq"}
+
+NEXT STEPS:
+- Export SUPABASE_ACCESS_TOKEN (https://supabase.com/dashboard/account/tokens)
+- supabase login --token 
+- supabase link --project-ref smgovvcbpncfsujynzcq
+- supabase db push
+- supabase functions deploy accrueInterest projection projectionWithSim

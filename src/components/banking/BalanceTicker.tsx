@@ -5,10 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAccountBalance } from '@/hooks/useRealtime';
+import { computeTickerValue, TickerBase } from '@/lib/interest/ticker';
 
 interface BalanceTickerProps {
   accountId: string;
-  initialBalance: number;
+  initialBalanceCents: number;
+  tiers?: { lower_cents: number; upper_cents?: number; apr_bps: number }[];
+  reducedMotion?: boolean;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   showIcon?: boolean;
@@ -17,32 +20,51 @@ interface BalanceTickerProps {
 
 export function BalanceTicker({
   accountId,
-  initialBalance,
+  initialBalanceCents,
+  tiers = [],
+  reducedMotion = false,
   size = 'md',
   className,
   showIcon = true,
   showTrend = false
 }: BalanceTickerProps) {
-  const [balance, setBalance] = useState(initialBalance);
-  const [previousBalance, setPreviousBalance] = useState(initialBalance);
+  const [balanceCents, setBalanceCents] = useState(initialBalanceCents);
+  const [previousBalanceCents, setPreviousBalanceCents] = useState(initialBalanceCents);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [tickerBase, setTickerBase] = useState<TickerBase>({
+    base_value_cents: initialBalanceCents,
+    base_timestamp_ms: Date.now(),
+    tiers
+  });
 
   // Subscribe to realtime balance updates
   useAccountBalance(accountId, (newBalance: number) => {
-    setPreviousBalance(balance);
-    setBalance(newBalance);
+    const newCents = Math.round(newBalance * 100);
+    setPreviousBalanceCents(balanceCents);
+    setBalanceCents(newCents);
+    setTickerBase({ base_value_cents: newCents, base_timestamp_ms: Date.now(), tiers });
     setIsAnimating(true);
     
     // Reset animation state
     setTimeout(() => setIsAnimating(false), 1000);
   });
 
-  const formatBalance = (amount: number) => {
+  // Local per-second ticker
+  useEffect(() => {
+    if (reducedMotion || tiers.length === 0) return;
+    const id = setInterval(() => {
+      const val = computeTickerValue(Date.now(), tickerBase);
+      setBalanceCents(Math.round(val));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [tickerBase, reducedMotion, tiers]);
+
+  const formatBalance = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2
-    }).format(amount);
+    }).format(cents / 100);
   };
 
   const sizeClasses = {
@@ -57,7 +79,7 @@ export function BalanceTicker({
     lg: 'w-8 h-8'
   };
 
-  const balanceChange = balance - previousBalance;
+  const balanceChange = balanceCents - previousBalanceCents;
   const isIncrease = balanceChange > 0;
   const isDecrease = balanceChange < 0;
 
@@ -82,7 +104,7 @@ export function BalanceTicker({
 
       <div className="flex-1">
         <motion.div
-          key={balance}
+          key={balanceCents}
           initial={{ opacity: 0, y: isIncrease ? -10 : isDecrease ? 10 : 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -93,7 +115,7 @@ export function BalanceTicker({
             'text-gray-900'
           )}
         >
-          {formatBalance(balance)}
+          {formatBalance(balanceCents)}
         </motion.div>
 
         <AnimatePresence>

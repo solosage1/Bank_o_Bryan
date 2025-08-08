@@ -233,7 +233,7 @@ export default function DashboardPage() {
                             <div className="bg-gray-50 rounded-xl p-4">
                               <BalanceTicker
                                 accountId={child.account.id}
-                                initialBalance={child.account.balance}
+                                initialBalanceCents={Math.round((child.account.balance || 0) * 100)}
                                 size="md"
                                 showIcon={false}
                                 className="justify-center"

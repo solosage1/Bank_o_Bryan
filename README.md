@@ -168,10 +168,10 @@ src/
 
 ### Netlify Deployment
 1. Connect your GitHub repository to Netlify
-2. Set environment variables in Netlify dashboard
+2. Set environment variables in Netlify dashboard (do not commit secrets)
 3. Configure build settings:
    - Build command: `npm run build`
-   - Publish directory: `out`
+   - Publish directory: `.next`
 
 ### Environment Variables for Production
 ```env

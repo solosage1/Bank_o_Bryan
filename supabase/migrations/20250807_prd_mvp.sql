@@ -118,14 +118,17 @@ CREATE INDEX IF NOT EXISTS idx_account_child ON accounts(child_id);
 CREATE INDEX IF NOT EXISTS idx_tier_effective ON interest_tiers_prd(family_id, child_id, effective_from);
 
 -- Default family tiers (per PRD)
-INSERT INTO interest_tiers_prd (family_id, child_id, lower_bound_cents, upper_bound_cents, apr_bps)
-SELECT f.id, NULL, t.lower, t.upper, t.bps
-FROM families f
-CROSS JOIN (VALUES
-  (0,        50000,   2500),
-  (50000,    150000,  2000),
-  (150000,   500000,  1500),
-  (500000,   1000000, 1000),
-  (1000000,  NULL,     500)
-) AS t(lower, upper, bps)
-ON CONFLICT DO NOTHING;
+DO $$
+DECLARE fam RECORD;
+BEGIN
+  FOR fam IN SELECT id FROM families LOOP
+    INSERT INTO interest_tiers_prd (family_id, child_id, lower_bound_cents, upper_bound_cents, apr_bps, effective_from)
+    VALUES
+      (fam.id, NULL, 0,        50000,   2500, now()),
+      (fam.id, NULL, 50000,    150000,  2000, now()),
+      (fam.id, NULL, 150000,   500000,  1500, now()),
+      (fam.id, NULL, 500000,   1000000, 1000, now()),
+      (fam.id, NULL, 1000000,  NULL,     500, now())
+    ON CONFLICT DO NOTHING;
+  END LOOP;
+END $$;

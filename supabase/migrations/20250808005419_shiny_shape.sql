@@ -90,15 +90,60 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at timestamptz DEFAULT now()
 );
 
--- Add foreign key constraint for goals -> rewards
-ALTER TABLE goals ADD CONSTRAINT fk_goals_reward_id 
-  FOREIGN KEY (reward_id) REFERENCES rewards(id) ON DELETE SET NULL;
+-- Ensure goals.reward_id exists before adding FK (in case goals table pre-existed)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' AND table_name = 'goals' AND column_name = 'reward_id'
+  ) THEN
+    ALTER TABLE goals ADD COLUMN reward_id uuid;
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_goals_reward_id'
+      AND conrelid = 'public.goals'::regclass
+  ) THEN
+    ALTER TABLE goals 
+      ADD CONSTRAINT fk_goals_reward_id 
+      FOREIGN KEY (reward_id) REFERENCES rewards(id) ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_goals_child_id ON goals(child_id);
-CREATE INDEX IF NOT EXISTS idx_goals_completed ON goals(is_completed, target_date);
-CREATE INDEX IF NOT EXISTS idx_rewards_family_id ON rewards(family_id);
-CREATE INDEX IF NOT EXISTS idx_rewards_available ON rewards(is_available, cost);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' AND table_name = 'goals' AND column_name = 'is_completed'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_goals_completed ON goals(is_completed, target_date);
+  END IF;
+END $$;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' AND table_name = 'rewards' AND column_name = 'family_id'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_rewards_family_id ON rewards(family_id);
+  END IF;
+END $$;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' AND table_name = 'rewards' AND column_name = 'is_available'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_rewards_available ON rewards(is_available, cost);
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_audit_log_family_id ON audit_log(family_id);
 CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id);
