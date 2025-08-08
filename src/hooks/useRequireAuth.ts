@@ -27,11 +27,11 @@ export function useRequireAuth(): AuthGuardStatus {
 
   // In E2E bypass, unblock onboarding form immediately regardless of auth state
   const isOnboardingPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/onboarding');
-  if (isBypass && isOnboardingPath) {
-    return 'needsOnboarding';
-  }
+  const isBypassOnOnboarding = isBypass && isOnboardingPath;
 
   useEffect(() => {
+    // Skip redirects entirely when in bypass mode on onboarding route
+    if (isBypassOnOnboarding) return;
     if (loading && !isBypass) return;
     if (!user) {
       router.replace("/");
@@ -40,8 +40,9 @@ export function useRequireAuth(): AuthGuardStatus {
     if (user && !family) {
       router.replace("/onboarding");
     }
-  }, [loading, user, family, router, isBypass]);
+  }, [loading, user, family, router, isBypass, isBypassOnOnboarding]);
 
+  if (isBypassOnOnboarding) return "needsOnboarding";
   if (loading && !isBypass) return "loading";
   if (!user) return "unauthenticated";
   if (user && !family) return "needsOnboarding";
