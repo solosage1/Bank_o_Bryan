@@ -1,5 +1,5 @@
 [build]
-  command = "npm ci --prefer-offline --no-audit --no-fund && npm run build"
+  command = "pnpm build"
   publish = ".next"
 
 [functions]
@@ -13,6 +13,7 @@
   NPM_CONFIG_FUND = "false"
   NPM_CONFIG_AUDIT = "false"
   NETLIFY_NEXT_PLUGIN_SKIP_INSTALL_CHECK = "true"
+  NODE_VERSION = "20"
 
 [[headers]]
   for = "/*"
