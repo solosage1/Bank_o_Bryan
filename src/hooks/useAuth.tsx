@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           families (*)
         `)
         .eq('auth_user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (parentError && parentError.code !== 'PGRST116') {
         throw parentError;

@@ -75,7 +75,9 @@ export default function OnboardingPage() {
           email: user.email!,
           name: user.user_metadata.full_name || user.email!.split('@')[0],
           auth_user_id: user.id,
-        }]);
+        }])
+        .select('id')
+        .single();
 
       if (parentError) throw parentError;
 
