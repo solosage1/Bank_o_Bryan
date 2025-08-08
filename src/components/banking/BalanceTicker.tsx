@@ -28,7 +28,7 @@ export function BalanceTicker({
   const [isAnimating, setIsAnimating] = useState(false);
 
   // Subscribe to realtime balance updates
-  useAccountBalance(accountId, (newBalance) => {
+  useAccountBalance(accountId, (newBalance: number) => {
     setPreviousBalance(balance);
     setBalance(newBalance);
     setIsAnimating(true);

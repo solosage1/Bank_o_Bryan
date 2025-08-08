@@ -136,7 +136,7 @@ export function TransactionModal({
 
   const modalTitle = type === 'deposit' ? 'Make Deposit' : 'Make Withdrawal';
   const modalDescription = `${type === 'deposit' ? 'Add money to' : 'Remove money from'} ${childName}'s account`;
-  const buttonIcon = type === 'deposit' ? Plus : Minus;
+  const ButtonIcon = type === 'deposit' ? Plus : Minus;
   const buttonColor = type === 'deposit' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
 
   return (
@@ -156,7 +156,7 @@ export function TransactionModal({
                     'w-8 h-8 rounded-full flex items-center justify-center',
                     type === 'deposit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                   )}>
-                    <buttonIcon className="w-4 h-4" />
+                    <ButtonIcon className="w-4 h-4" />
                   </div>
                   <span>{modalTitle}</span>
                 </DialogTitle>
@@ -289,7 +289,7 @@ export function TransactionModal({
                         </div>
                       ) : (
                         <div className="flex items-center space-x-2">
-                          <buttonIcon className="w-4 h-4" />
+                          <ButtonIcon className="w-4 h-4" />
                           <span>{modalTitle}</span>
                         </div>
                       )}
