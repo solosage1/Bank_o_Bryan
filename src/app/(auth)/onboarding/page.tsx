@@ -67,15 +67,15 @@ export default function OnboardingPage() {
       if (familyError) throw familyError;
       if (!family) throw new Error('Family insert returned no data');
 
-      // Create parent record
+      // Create parent record (minimal fields per PRD schema)
       const { error: parentError } = await supabase
         .from('parents')
-        .insert([{ 
-          family_id: family.id,
-          email: user.email!,
-          name: user.user_metadata.full_name || user.email!.split('@')[0],
-          auth_user_id: user.id,
-        }])
+        .insert([
+          {
+            family_id: family.id,
+            auth_user_id: user.id,
+          } as any,
+        ])
         .select('id')
         .single();
 
