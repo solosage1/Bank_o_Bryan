@@ -5,8 +5,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Onboarding happy path', () => {
   test('Creates a family and redirects to dashboard', async ({ page }) => {
-    // Precondition: E2E bypass sets a fake user only on onboarding route
-    await page.goto('/onboarding');
+    // Precondition: ensure E2E bypass is active client-side before load
+    await page.addInitScript(() => localStorage.setItem('E2E_BYPASS', '1'));
+    await page.goto('/onboarding?e2e=1');
 
     // Fill family name
     await page.getByLabel('Family Name').fill('Playwright Test Family');

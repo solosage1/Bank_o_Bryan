@@ -12,7 +12,7 @@ const config: PlaywrightTestConfig = {
     headless: true,
   },
   webServer: {
-    command: 'pnpm build && pnpm start',
+    command: 'pnpm dev',
     port: PORT,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

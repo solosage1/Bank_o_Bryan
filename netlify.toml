@@ -21,26 +21,3 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-
-# Ensure root and all SPA routes resolve via Next runtime without 404s
-[[redirects]]
-  from = "/index.html"
-  to = "/"
-  status = 200
-
-# Explicit rewrites for SSR routes as a stopgap for 404s
-[[redirects]]
-  from = "/dashboard*"
-  to = "/.netlify/functions/next"
-  status = 200
-
-[[redirects]]
-  from = "/onboarding*"
-  to = "/.netlify/functions/next"
-  status = 200
-
-# Catch-all rewrite to ensure all App Router routes are served by the Next runtime
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/next"
-  status = 200

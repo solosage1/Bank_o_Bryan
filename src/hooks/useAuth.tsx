@@ -78,7 +78,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // E2E bypass: provide a fake authenticated user to drive happy-path flows without real Supabase
-    if (process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1') {
+    const isBypass =
+      process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
+      (typeof window !== 'undefined' &&
+        (new URLSearchParams(window.location.search).get('e2e') === '1' ||
+         window.localStorage.getItem('E2E_BYPASS') === '1'));
+
+    if (isBypass) {
       const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
       if (pathname.startsWith('/onboarding')) {
         setUser({ id: 'e2e-user' } as unknown as User);

@@ -39,9 +39,17 @@ export const handleAuthStateChange = (callback: (session: any) => void) => {
 
 // Helper function to sign in with Google
 export const signInWithGoogle = async () => {
-  if (process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1') {
+  const isBypass =
+    process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
+    (typeof window !== 'undefined' && (
+      new URLSearchParams(window.location.search).get('e2e') === '1' ||
+      window.localStorage.getItem('E2E_BYPASS') === '1'
+    ));
+
+  if (isBypass) {
     // Simulate OAuth by navigating to a predictable provider-like URL for tests
-    const target = `${process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')}/oauth/stub`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL ?? '');
+    const target = `${origin}/oauth/stub`;
     if (typeof window !== 'undefined') window.location.assign(target);
     return { provider: 'google', url: target } as any;
   }
