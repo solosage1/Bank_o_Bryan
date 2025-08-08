@@ -44,7 +44,9 @@ create table if not exists interest_tiers_prd (
   created_at timestamptz not null default now()
 );
 
-create type transaction_type as enum ('deposit','withdrawal','interest_posting','adjustment');
+do $$ begin
+  create type transaction_type as enum ('deposit','withdrawal','interest_posting','adjustment');
+exception when duplicate_object then null; end $$;
 
 create table if not exists transactions_prd (
   id uuid primary key default gen_random_uuid(),
