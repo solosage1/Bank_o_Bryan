@@ -80,8 +80,8 @@ export function useAccountBalance(accountId: string, onUpdate: (balance: number)
     filter: 'id',
     eq: accountId,
     onUpdate: (payload) => {
-      if (payload.new?.balance !== undefined) {
-        onUpdate(payload.new.balance);
+      if (payload.new?.current_balance_cents !== undefined) {
+        onUpdate((payload.new.current_balance_cents as number) / 100);
       }
     }
   });
@@ -90,7 +90,7 @@ export function useAccountBalance(accountId: string, onUpdate: (balance: number)
 // Specialized hook for transaction updates
 export function useTransactions(accountId: string, onNewTransaction: (transaction: any) => void) {
   return useRealtime({
-    table: 'transactions',
+    table: 'transactions_prd',
     filter: 'account_id',
     eq: accountId,
     onInsert: (payload) => {

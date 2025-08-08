@@ -6,11 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-interface Account {
+interface AccountRow {
   id: string;
   child_id: string;
-  balance: number;
-  last_interest_date: string;
+  current_balance_cents: number;
+  as_of: string; // last authoritative timestamp
 }
 
 interface InterestRun {
@@ -38,119 +38,94 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get current date in UTC
-    const today = new Date().toISOString().split('T')[0];
+    // today in UTC (date-only)
+    const today = new Date().toISOString().slice(0, 10);
 
-    // Check if interest has already been accrued today
-    const { data: existingRun } = await supabase
-      .from('interest_runs')
-      .select('id')
-      .eq('run_date', today)
-      .eq('status', 'completed')
-      .single();
-
-    if (existingRun) {
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Interest already accrued for today',
-          run_date: today 
-        }),
-        {
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders 
-          }
-        }
-      );
-    }
-
-    // Create new interest run
-    const { data: interestRun, error: runError } = await supabase
-      .from('interest_runs')
-      .insert([{
-        run_date: today,
-        status: 'running'
-      }])
-      .select()
-      .single();
-
-    if (runError) {
-      throw new Error(`Failed to create interest run: ${runError.message}`);
-    }
-
-    // Get all accounts that need interest accrual
+    // Get all accounts
     const { data: accounts, error: accountsError } = await supabase
       .from('accounts')
-      .select('id, child_id, balance, last_interest_date')
-      .neq('balance', 0)
-      .lt('last_interest_date', today);
+      .select('id, child_id, current_balance_cents, as_of');
 
     if (accountsError) {
       throw new Error(`Failed to fetch accounts: ${accountsError.message}`);
     }
 
-    let totalInterestPaid = 0;
     let accountsProcessed = 0;
 
     // Process each account
-    for (const account of accounts || []) {
+    for (const account of (accounts as AccountRow[]) || []) {
       try {
-        // Calculate days since last interest
-        const lastInterestDate = new Date(account.last_interest_date);
-        const currentDate = new Date(today);
-        const daysDiff = Math.floor(
-          (currentDate.getTime() - lastInterestDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
+        // Compute days to run from last as_of to today-1
+        const lastAsOf = new Date(account.as_of.slice(0, 10));
+        const endDate = new Date(today);
+        let principal = account.current_balance_cents;
+        let carryMicros = 0;
 
-        if (daysDiff <= 0) continue;
+        for (
+          let d = new Date(lastAsOf.getTime() + 24 * 3600 * 1000);
+          d < endDate;
+          d = new Date(d.getTime() + 24 * 3600 * 1000)
+        ) {
+          const runDate = d.toISOString().slice(0, 10);
+          // idempotency: check if already posted for this day
+          const { data: existing, error: existingErr } = await supabase
+            .from('interest_runs_prd')
+            .select('id')
+            .eq('account_id', account.id)
+            .eq('run_date', runDate)
+            .maybeSingle();
+          if (existingErr) continue;
+          if (existing) continue;
 
-        // Calculate interest using the database function
-        const { data: interestData, error: interestError } = await supabase
-          .rpc('calculate_daily_interest', {
-            account_balance: account.balance,
-            account_id: account.id
-          });
+          // fetch tiers for this date
+          const { data: tiers } = await supabase
+            .from('interest_tiers_prd')
+            .select('lower_bound_cents, upper_bound_cents, apr_bps, effective_from, effective_to')
+            .lte('effective_from', runDate)
+            .or(`effective_to.is.null,effective_to.gte.${runDate}`)
+            .order('lower_bound_cents', { ascending: true });
 
-        if (interestError) {
-          console.error(`Failed to calculate interest for account ${account.id}:`, interestError);
-          continue;
-        }
+          const slices = (tiers || []).map(t => ({
+            lower_cents: t.lower_bound_cents as number,
+            upper_cents: (t.upper_bound_cents as number | null) ?? undefined,
+            apr_bps: t.apr_bps as number,
+          }));
 
-        const dailyInterest = parseFloat(interestData || '0');
-        const totalInterest = dailyInterest * daysDiff;
+          // daily interest micros on principal at start of day
+          let dailyMicros = 0;
+          for (const s of slices) {
+            const upper = s.upper_cents ?? Number.MAX_SAFE_INTEGER;
+            const inTier = Math.max(0, Math.min(principal, upper) - s.lower_cents);
+            if (inTier > 0) dailyMicros += Math.round(inTier * (s.apr_bps / 10000 / 365) * 1_000_000);
+          }
+          const totalMicros = dailyMicros + carryMicros;
+          const cents = Math.trunc(totalMicros / 1_000_000);
+          carryMicros = totalMicros - cents * 1_000_000;
 
-        if (totalInterest > 0) {
-          // Process interest transaction
-          const { error: transactionError } = await supabase
-            .rpc('process_transaction', {
+          if (cents !== 0) {
+            // post interest transaction and upsert run
+            const { error: txnErr } = await supabase.rpc('process_transaction', {
               p_account_id: account.id,
-              p_type: 'interest',
-              p_amount: totalInterest,
-              p_description: `Interest accrued for ${daysDiff} day(s)`,
-              p_transaction_date: today
+              p_type: 'interest_posting',
+              p_amount_cents: cents,
+              p_description: `Daily interest ${runDate}`,
+              p_parent_id: null,
+              p_transaction_date: runDate,
+              p_require_confirm: false,
             });
-
-          if (transactionError) {
-            console.error(`Failed to process interest for account ${account.id}:`, transactionError);
-            continue;
+            if (txnErr) {
+              console.error('txn error', txnErr);
+              continue;
+            }
+            principal += cents;
           }
 
-          // Update account's last interest date and total earned
-          const { error: updateError } = await supabase
-            .from('accounts')
-            .update({
-              last_interest_date: today,
-              total_earned: account.balance + totalInterest - account.balance // This will be recalculated by trigger
-            })
-            .eq('id', account.id);
-
-          if (updateError) {
-            console.error(`Failed to update account ${account.id}:`, updateError);
-            continue;
-          }
-
-          totalInterestPaid += totalInterest;
+          await supabase.from('interest_runs_prd').insert({
+            account_id: account.id,
+            run_date: runDate,
+            interest_cents: cents,
+            residual_micros: carryMicros,
+          });
         }
 
         accountsProcessed++;
@@ -160,27 +135,10 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Update interest run with results
-    const { error: updateRunError } = await supabase
-      .from('interest_runs')
-      .update({
-        accounts_processed: accountsProcessed,
-        total_interest_paid: totalInterestPaid,
-        completed_at: new Date().toISOString(),
-        status: 'completed'
-      })
-      .eq('id', interestRun.id);
-
-    if (updateRunError) {
-      throw new Error(`Failed to update interest run: ${updateRunError.message}`);
-    }
-
     const result = {
       success: true,
       run_date: today,
-      accounts_processed: accountsProcessed,
-      total_interest_paid: totalInterestPaid,
-      run_id: interestRun.id
+      accounts_processed: accountsProcessed
     };
 
     return new Response(
