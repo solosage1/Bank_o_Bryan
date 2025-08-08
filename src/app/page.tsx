@@ -1,4 +1,5 @@
 import { Banknote, Sparkles, Target, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import SignInIsland from '@/app/_components/SignInIsland';
 
@@ -33,7 +34,7 @@ export default function HomePage(): JSX.Element {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl mb-6 shadow-lg">
-              <Banknote className="w-10 h-10 text-white" />
+              <Banknote className="w-10 h-10 text-white" aria-hidden="true" />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
               Bank o&apos;Bryan
@@ -53,8 +54,8 @@ export default function HomePage(): JSX.Element {
                     <CardContent className="p-5">
                       <div className="flex items-center space-x-4">
                         <div className="flex-shrink-0">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                            <feature.icon className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                            <feature.icon className="w-6 h-6 text-white" aria-hidden="true" />
                           </div>
                         </div>
                         <div className="flex-1">
@@ -87,7 +88,10 @@ export default function HomePage(): JSX.Element {
                 </noscript>
                 <div className="mt-6 text-center">
                   <p className="text-sm text-gray-500">
-                    By signing in, you agree to our terms of service and privacy policy
+                    By signing in, you agree to our{' '}
+                    <Link href="/legal/terms" className="underline underline-offset-2 hover:text-gray-700">terms of service</Link>
+                    {' '}and{' '}
+                    <Link href="/legal/privacy" className="underline underline-offset-2 hover:text-gray-700">privacy policy</Link>.
                   </p>
                 </div>
               </CardContent>

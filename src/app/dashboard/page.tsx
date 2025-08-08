@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Settings, LogOut, Users, DollarSign } from 'lucide-react';
@@ -28,7 +28,7 @@ export default function DashboardPage() {
   } | null>(null);
 
   // Fetch children and their accounts
-  const fetchChildren = async () => {
+  const fetchChildren = useCallback(async () => {
     if (!family) {
       // Nothing to fetch; ensure we clear any local fetching state
       setChildren([]);
@@ -50,7 +50,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error fetching children:', error);
     }
-  };
+  }, [family]);
 
   // Route guarding based on auth state
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function DashboardPage() {
     }
 
     run();
-  }, [authLoading, family]);
+  }, [authLoading, family, fetchChildren]);
 
   const openTransactionModal = (
     childId: string, 
@@ -173,7 +173,7 @@ export default function DashboardPage() {
               {family?.name} Dashboard
             </h1>
             <p className="text-gray-600">
-              Welcome back, {parent?.name}! Manage your family's virtual banking.
+              Welcome back, {parent?.name}! Manage your family&apos;s virtual banking.
             </p>
           </div>
           <div className="flex items-center space-x-3">

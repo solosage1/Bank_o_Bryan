@@ -19,11 +19,27 @@ export default function AuthCallbackPage() {
         return;
       }
 
+      // Case 1: PKCE flow with code param
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
           setErrorMessage(error.message);
           return;
+        }
+      } else {
+        // Case 2: Implicit flow with hash params (#access_token=...)
+        const hash = typeof window !== 'undefined' ? window.location.hash : '';
+        if (hash && hash.startsWith('#')) {
+          const hashParams = new URLSearchParams(hash.slice(1));
+          const access_token = hashParams.get('access_token');
+          const refresh_token = hashParams.get('refresh_token');
+          if (access_token && refresh_token) {
+            const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+            if (error) {
+              setErrorMessage(error.message);
+              return;
+            }
+          }
         }
       }
 

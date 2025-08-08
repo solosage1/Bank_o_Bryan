@@ -1,17 +1,17 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/ui/icons';
 import { useAuth } from '@/hooks/useAuth';
-import { useRedirectOnReady } from '@/hooks/useRedirectOnReady';
 import type { AuthGuardStatus } from '@/hooks/useRequireAuth';
 import { track } from '@/components/analytics/track';
 
 export default function SignInIsland(): JSX.Element {
   const { user, family, loading, signInWithGoogle } = useAuth();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const status: AuthGuardStatus = useMemo(() => {
     if (loading) return 'loading';
@@ -20,34 +20,45 @@ export default function SignInIsland(): JSX.Element {
     return 'ready';
   }, [loading, user, family]);
 
-  useRedirectOnReady(status, '/dashboard');
-
+  // Single redirect effect to avoid double navigation or flicker
   useEffect(() => {
-    if (!loading && user && !family) {
+    if (status === 'ready') {
+      router.replace('/dashboard');
+      return;
+    }
+    if (status === 'needsOnboarding') {
       track('projection_viewed', { note: 'root_redirect_to_onboarding' });
       router.replace('/onboarding');
     }
-  }, [loading, user, family, router]);
+  }, [status, router]);
 
-  const isLoading = loading;
+  const handleSignIn = async (): Promise<void> => {
+    try {
+      setIsSubmitting(true);
+      await signInWithGoogle();
+    } finally {
+      // If sign-in navigates away, this state won't matter; otherwise it re-enables the button
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Button
       type="button"
-      onClick={() => signInWithGoogle()}
-      disabled={isLoading}
+      onClick={handleSignIn}
+      disabled={isSubmitting}
       size="lg"
       variant="google"
       className="w-full rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
     >
-      {isLoading ? (
+      {isSubmitting ? (
         <div className="flex items-center space-x-2">
-          <Icons.spinner className="w-5 h-5 animate-spin" />
-          <span>Preparing…</span>
+          <Icons.spinner className="w-5 h-5 animate-spin" aria-hidden="true" />
+          <span>Signing in…</span>
         </div>
       ) : (
         <div className="flex items-center space-x-3">
-          <Icons.googleGlyph className="w-5 h-5" />
+          <Icons.googleGlyph className="w-5 h-5" aria-hidden="true" />
           <span>Continue with Google</span>
         </div>
       )}

@@ -86,7 +86,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
             {/* Features */}
             <div className="space-y-4">
               <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                Why Choose Bank o'Bryan?
+                Why Choose Bank o&apos;Bryan?
               </h2>
               
               <div className="grid gap-6">

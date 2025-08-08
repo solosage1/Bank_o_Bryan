@@ -3,22 +3,48 @@ import type { Metadata } from 'next';
 import { AuthProvider } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bankobryan.netlify.app';
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bankobryan.netlify.app'),
-  title: 'Bank o\'Bryan - Family Banking for Kids',
-  description: 'A playful virtual family bank designed for kids aged 10-14. Teach financial responsibility through interactive banking experiences.',
+  metadataBase: new URL(SITE_URL),
+  title: "Bank o'Bryan - Family Banking for Kids",
+  description:
+    'A playful virtual family bank designed for kids aged 10-14. Teach financial responsibility through interactive banking experiences.',
   keywords: ['family banking', 'kids finance', 'virtual money', 'financial education', 'children savings'],
-  authors: [{ name: 'Bank o\'Bryan Team' }],
+  authors: [{ name: "Bank o'Bryan Team" }],
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/icon', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-icon', sizes: '180x180', type: 'image/png' }],
+    shortcut: ['/favicon.ico', '/icon'],
   },
   openGraph: {
-    title: 'Bank o\'Bryan - Family Banking for Kids',
+    title: "Bank o'Bryan - Family Banking for Kids",
     description: 'A playful virtual family bank designed for kids aged 10-14',
     type: 'website',
+    url: SITE_URL,
+    images: [
+      {
+        url: `${SITE_URL}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "Bank o'Bryan",
+      },
+    ],
   },
+  twitter: {
+    card: 'summary_large_image',
+    images: [`${SITE_URL}/opengraph-image`],
+    title: "Bank o'Bryan - Family Banking for Kids",
+    description:
+      'A playful virtual family bank designed for kids aged 10-14. Teach financial responsibility through interactive banking experiences.',
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
+  themeColor: '#ffffff',
 };
 
 export default function RootLayout({
