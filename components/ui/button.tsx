@@ -18,6 +18,9 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
+        // Brand: Google sign-in button
+        google:
+          'bg-white text-[#3c4043] border border-[#dadce0] hover:bg-[#f7f8f8] active:bg-[#eef0f0] shadow-sm hover:shadow-md cursor-pointer active:shadow-sm active:translate-y-[1px]',
       },
       size: {
         default: 'h-10 px-4 py-2',

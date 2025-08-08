@@ -212,7 +212,7 @@ export default function DashboardPage() {
         {/* Children Cards */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Children's Accounts</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Children&apos;s Accounts</h2>
             <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
               <Plus className="w-4 h-4 mr-2" />
               Add Child

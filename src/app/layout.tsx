@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/hooks/useAuth';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bankobryan.netlify.app'),
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           {children}
+          <Toaster />
         </AuthProvider>
       </body>
     </html>

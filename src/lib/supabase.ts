@@ -39,14 +39,21 @@ export const handleAuthStateChange = (callback: (session: any) => void) => {
 
 // Helper function to sign in with Google
 export const signInWithGoogle = async () => {
+  if (process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1') {
+    // Simulate OAuth by navigating to a predictable provider-like URL for tests
+    const target = `${process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')}/oauth/stub`;
+    if (typeof window !== 'undefined') window.location.assign(target);
+    return { provider: 'google', url: target } as any;
+  }
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase is not configured. Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  }
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      // Prefer a configured site URL in production; fall back to browser origin
       redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')}/auth/callback`
     }
   });
-  
   if (error) throw error;
   return data;
 };

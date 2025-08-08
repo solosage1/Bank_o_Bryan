@@ -13,6 +13,7 @@
     "ci:report": "echo 'Guard checks:' && pnpm -s ci:guard-check && echo '\nRedirect usage:' && pnpm -s ci:redirect-check",
     "test": "vitest run",
     "test:watch": "vitest",
+    "e2e": "playwright test",
     "type-check": "tsc --noEmit",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",

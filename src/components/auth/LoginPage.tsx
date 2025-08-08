@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/ui/icons';
 import { Banknote, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface LoginPageProps {
   onSignIn: () => Promise<void>;
@@ -20,6 +21,10 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
       await onSignIn();
     } catch (error) {
       console.error('Sign in error:', error);
+      toast({
+        title: 'Unable to start Google sign-in',
+        description: 'Please try again in a moment. If the problem persists, contact support.',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +73,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
               <Banknote className="w-10 h-10 text-white" />
             </motion.div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-              Bank o'Bryan
+              Bank o&apos;Bryan
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               A playful virtual family bank designed for kids aged 10-14. 
@@ -135,7 +140,8 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
                     onClick={handleSignIn}
                     disabled={isLoading}
                     size="lg"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    variant="google"
+                    className="w-full rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   >
                     {isLoading ? (
                       <div className="flex items-center space-x-2">
@@ -144,7 +150,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
                       </div>
                     ) : (
                       <div className="flex items-center space-x-3">
-                        <Icons.google className="w-5 h-5" />
+                        <Icons.googleGlyph className="w-5 h-5" />
                         <span>Continue with Google</span>
                       </div>
                     )}

@@ -14,6 +14,13 @@ do $$ begin
       for insert to authenticated
       with check (auth_user_id = auth.uid());
   exception when duplicate_object then null; end;
+
+  -- Ensure audit log can be written during onboarding
+  begin
+    create policy audit_insert_onboarding on audit_log
+      for insert to authenticated
+      with check (true);
+  exception when duplicate_object then null; end;
 end $$;
 
 
