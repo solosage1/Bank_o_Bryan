@@ -144,14 +144,34 @@ $$;
 -- NOTE: Refine with JWT claims in production.
 
 -- Allow authenticated parents to access their family rows
-create policy if not exists families_read on families for select to authenticated using (true);
-create policy if not exists children_rw on children for all to authenticated using (true) with check (true);
-create policy if not exists accounts_rw on accounts for all to authenticated using (true) with check (true);
-create policy if not exists transactions_rw on transactions_prd for all to authenticated using (true) with check (true);
-create policy if not exists interest_runs_rw on interest_runs_prd for all to authenticated using (true) with check (true);
-create policy if not exists tiers_rw on interest_tiers_prd for all to authenticated using (true) with check (true);
-create policy if not exists goals_rw on goals for all to authenticated using (true) with check (true);
-create policy if not exists rewards_rw on rewards for all to authenticated using (true) with check (true);
-create policy if not exists audit_read on audit_log for select to authenticated using (true);
+do $$ begin
+  begin
+    create policy families_read on families for select to authenticated using (true);
+  exception when duplicate_object then null; end;
+  begin
+    create policy children_rw on children for all to authenticated using (true) with check (true);
+  exception when duplicate_object then null; end;
+  begin
+    create policy accounts_rw on accounts for all to authenticated using (true) with check (true);
+  exception when duplicate_object then null; end;
+  begin
+    create policy transactions_rw on transactions_prd for all to authenticated using (true) with check (true);
+  exception when duplicate_object then null; end;
+  begin
+    create policy interest_runs_rw on interest_runs_prd for all to authenticated using (true) with check (true);
+  exception when duplicate_object then null; end;
+  begin
+    create policy tiers_rw on interest_tiers_prd for all to authenticated using (true) with check (true);
+  exception when duplicate_object then null; end;
+  begin
+    create policy goals_rw on goals for all to authenticated using (true) with check (true);
+  exception when duplicate_object then null; end;
+  begin
+    create policy rewards_rw on rewards for all to authenticated using (true) with check (true);
+  exception when duplicate_object then null; end;
+  begin
+    create policy audit_read on audit_log for select to authenticated using (true);
+  exception when duplicate_object then null; end;
+end $$;
 
 
