@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { ImageResponse } from 'next/server';
 
 export const size = {
@@ -6,38 +5,16 @@ export const size = {
   height: 630,
 };
 export const contentType = 'image/png';
+export const runtime = 'edge';
 
 export default function OGImage() {
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #eff6ff 0%, #eef2ff 100%)',
-          color: '#111827',
-          fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-        }}
-      >
-        <div
-          style={{
-            fontSize: 72,
-            fontWeight: 800,
-            backgroundImage: 'linear-gradient(90deg, #2563eb, #7c3aed)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-          }}
-        >
+      <div tw="flex h-full w-full flex-col items-center justify-center bg-gradient-to-tr from-blue-50 to-indigo-50 text-gray-900 font-sans">
+        <div tw="text-7xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Bank o'Bryan
         </div>
-        <div style={{ fontSize: 28, marginTop: 16, color: '#374151' }}>
-          Family Banking for Kids
-        </div>
+        <div tw="mt-4 text-3xl text-gray-600">Family Banking for Kids</div>
       </div>
     ),
     { ...size }

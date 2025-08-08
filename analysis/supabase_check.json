@@ -1,7 +1,7 @@
 {
-  "url": "https://smgovvcbpncfsujynzcq.supabase.co",
+  "url": "http://127.0.0.1:54321",
   "usedKey": "service_role",
-  "probedAt": "2025-08-08T04:13:44.395Z",
+  "probedAt": "2025-08-08T14:49:17.577Z",
   "results": [
     {
       "table": "families",

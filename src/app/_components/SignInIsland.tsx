@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/ui/icons';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import type { AuthGuardStatus } from '@/hooks/useRequireAuth';
 import { track } from '@/components/analytics/track';
 
@@ -12,6 +13,7 @@ export default function SignInIsland(): JSX.Element {
   const { user, family, loading, signInWithGoogle } = useAuth();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const status: AuthGuardStatus = useMemo(() => {
     if (loading) return 'loading';
@@ -36,6 +38,16 @@ export default function SignInIsland(): JSX.Element {
     try {
       setIsSubmitting(true);
       await signInWithGoogle();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unable to start Google sign-in.';
+      // Surface a user-visible error; common culprits: pop-up blocked or missing env vars
+      toast({
+        title: 'Sign-in failed',
+        description: message || 'Please check your pop-up blocker and try again.',
+        variant: 'destructive',
+      });
+      // eslint-disable-next-line no-console
+      console.error('Sign-in initiation failed:', error);
     } finally {
       // If sign-in navigates away, this state won't matter; otherwise it re-enables the button
       setIsSubmitting(false);
