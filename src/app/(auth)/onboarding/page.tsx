@@ -37,7 +37,7 @@ const timezones = [
 ];
 
 export default function OnboardingPage() {
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const status = useRequireAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -108,9 +108,10 @@ export default function OnboardingPage() {
         }
       })();
 
-      // Redirect to dashboard
+      // Refresh auth context so guards see the new family immediately, then redirect
+      await refreshProfile();
       track('family_created', { phase: 'success', familyId });
-      router.push('/dashboard');
+      router.replace('/dashboard');
     } catch (error) {
       console.error('Onboarding error:', error);
       const err: any = error;
