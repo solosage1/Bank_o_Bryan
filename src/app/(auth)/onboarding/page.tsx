@@ -65,7 +65,7 @@ export default function OnboardingPage() {
             sibling_visibility: data.siblingVisibility as unknown as boolean,
           } as any,
         ])
-        .select()
+        .select('id')
         .single();
 
       if (familyError) throw familyError;

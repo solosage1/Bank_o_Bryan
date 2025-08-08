@@ -66,12 +66,12 @@ export function BalanceTicker({
     const id = setInterval(async () => {
       const { data } = await supabase
         .from('accounts')
-        .select('current_balance_cents, as_of')
+        .select('balance, updated_at')
         .eq('id', accountId)
         .maybeSingle();
-      if (data?.current_balance_cents != null) {
+      if (data?.balance != null) {
         setTickerBase({
-          base_value_cents: data.current_balance_cents,
+          base_value_cents: Math.round(data.balance * 100),
           base_timestamp_ms: Date.now(),
           tiers
         });

@@ -61,12 +61,12 @@ export default function PlaygroundPage() {
         <CardContent>
           <div className="flex flex-col md:flex-row md:items-end gap-3 mb-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Amount (cents)</label>
-              <input className="border rounded px-2 py-1" type="number" value={amount} onChange={e => setAmount(parseInt(e.target.value || '0', 10))} />
+              <label htmlFor="amount" className="block text-sm font-medium mb-1">Amount (cents)</label>
+              <input id="amount" className="border rounded px-2 py-1" type="number" value={amount} onChange={e => setAmount(parseInt(e.target.value || '0', 10))} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Date</label>
-              <input className="border rounded px-2 py-1" type="date" value={date} onChange={e => setDate(e.target.value)} />
+              <label htmlFor="date" className="block text-sm font-medium mb-1">Date</label>
+              <input id="date" className="border rounded px-2 py-1" type="date" value={date} onChange={e => setDate(e.target.value)} />
             </div>
             <div className="flex gap-2">
               <Button onClick={() => runSim('deposit')}>Sim Deposit</Button>
