@@ -111,9 +111,9 @@ do $$ begin
     raise notice 'legacy table interest_tiers exists; skipping view creation';
   else
     begin
-      execute $$drop view if exists interest_tiers$$;
+      execute 'drop view if exists interest_tiers';
     exception when undefined_table then null; end;
-    execute $$create view interest_tiers as
+    execute 'create view interest_tiers as
       select 
         id,
         lower_bound_cents as min_balance,
@@ -121,7 +121,7 @@ do $$ begin
         (apr_bps::numeric / 10000.0) as annual_rate,
         true as is_active
       from interest_tiers_prd
-      where (effective_to is null or effective_to >= current_date)$$;
+      where (effective_to is null or effective_to >= current_date)';
   end if;
 end $$;
 
