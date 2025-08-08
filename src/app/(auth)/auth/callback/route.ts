@@ -1,22 +1,12 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
 
-  if (code) {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-    
-    try {
-      await supabase.auth.exchangeCodeForSession(code);
-    } catch (error) {
-      console.error('Error exchanging code for session:', error);
-      return NextResponse.redirect(`${requestUrl.origin}/auth/error`);
-    }
-  }
+  // If we ever receive a code param here, redirect to root; client-side OAuth handles session
+  // This is a no-op placeholder now that auth-helpers are removed.
 
   // Redirect to dashboard or onboarding
   return NextResponse.redirect(`${requestUrl.origin}/dashboard`);

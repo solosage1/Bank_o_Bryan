@@ -52,7 +52,7 @@ export function useRealtime({
     );
 
     // Subscribe
-    query.subscribe((status) => {
+    query.subscribe((status: string) => {
       if (status === 'SUBSCRIBED') {
         console.log(`Realtime connected to ${table}`);
       } else if (status === 'CHANNEL_ERROR') {
