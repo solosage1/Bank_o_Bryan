@@ -6,6 +6,7 @@ import { DollarSign, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAccountBalance } from '@/hooks/useRealtime';
 import { computeTickerValue, TickerBase } from '@/lib/interest/ticker';
+import { supabase } from '@/lib/supabase';
 
 interface BalanceTickerProps {
   accountId: string;
@@ -58,6 +59,26 @@ export function BalanceTicker({
     }, 1000);
     return () => clearInterval(id);
   }, [tickerBase, reducedMotion, tiers]);
+
+  // Periodic rebase from server authority
+  useEffect(() => {
+    if (!accountId) return;
+    const id = setInterval(async () => {
+      const { data } = await supabase
+        .from('accounts')
+        .select('current_balance_cents, as_of')
+        .eq('id', accountId)
+        .maybeSingle();
+      if (data?.current_balance_cents != null) {
+        setTickerBase({
+          base_value_cents: data.current_balance_cents,
+          base_timestamp_ms: Date.now(),
+          tiers
+        });
+      }
+    }, 60000);
+    return () => clearInterval(id);
+  }, [accountId, tiers]);
 
   const formatBalance = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
