@@ -1,14 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Read public env at build-time; avoid throwing during module init so the app can hydrate
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  // Surface a readable console error but do not crash the client bundle
+  // Netlify: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in site env
+  // This allows the app to render and show the login/home even while backend is misconfigured
+  // eslint-disable-next-line no-console
+  console.error('Supabase is not configured. Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(
+  supabaseUrl || 'https://invalid.supabase.co',
+  supabaseAnonKey || 'invalid',
+  {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -19,7 +27,8 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       eventsPerSecond: 2
     }
   }
-});
+  }
+);
 
 // Helper function to handle auth state changes
 export const handleAuthStateChange = (callback: (session: any) => void) => {

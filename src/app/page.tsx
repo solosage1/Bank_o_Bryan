@@ -13,12 +13,17 @@ export default function HomePage() {
   useEffect(() => {
     if (!loading) {
       setIsInitialized(true);
-      
-      if (user && parent && family) {
-        router.push('/dashboard');
-      } else if (user && !parent) {
-        router.push('/onboarding');
-      }
+
+      // Defer navigation slightly to let initial client hydration complete
+      // This avoids staying stuck on the loading screen in some SSR/CDN setups
+      const t = setTimeout(() => {
+        if (user && parent && family) {
+          router.push('/dashboard');
+        } else if (user && !parent) {
+          router.push('/onboarding');
+        }
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, [user, parent, family, loading, router]);
 
