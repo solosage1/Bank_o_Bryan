@@ -30,6 +30,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
+          <noscript>
+            <div className="nojs-notice">
+              For sign-in and app functionality, please enable JavaScript. You can still read about Bank o&apos;Bryan below.
+            </div>
+          </noscript>
           {children}
           <Toaster />
         </AuthProvider>

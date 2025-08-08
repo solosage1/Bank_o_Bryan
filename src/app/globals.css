@@ -83,3 +83,12 @@
 }
 
 
+/* Non-JS notice bar styling (rendered via <noscript>) */
+.nojs-notice {
+  background: #fff7ed; /* amber-50 */
+  color: #7c2d12; /* amber-900 */
+  padding: 8px 12px;
+  text-align: center;
+}
+
+

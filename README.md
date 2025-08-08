@@ -5,6 +5,7 @@ A playful virtual family bank designed for kids aged 10-14, with comprehensive p
 ## 🏦 Features
 
 ### For Parents
+
 - **Google OAuth Authentication** - Secure login via Supabase Auth
 - **Family Dashboard** - Live balance tickers for all children updating every second
 - **Account Management** - Add/edit children with personalization options
@@ -12,6 +13,7 @@ A playful virtual family bank designed for kids aged 10-14, with comprehensive p
 - **Goal & Reward Management** - Create goals and track progress
 
 ### For Kids (10-14)
+
 - **Live Balance Tracking** - Real-time balance updates via WebSockets
 - **Transaction History** - Filterable history with CSV export capability
 - **Financial Projections** - 12-month projections with interactive playground
@@ -19,6 +21,7 @@ A playful virtual family bank designed for kids aged 10-14, with comprehensive p
 - **Personalization** - Avatar selection, themes, and nicknames
 
 ### Banking System
+
 - **Tiered Interest Rates** - Virtual money earns interest based on balance tiers
 - **Real-time Updates** - Balance changes propagate instantly via Supabase Realtime
 - **Daily Interest Accrual** - Automated cron job for interest calculation
@@ -35,12 +38,14 @@ A playful virtual family bank designed for kids aged 10-14, with comprehensive p
 ## 📦 Installation
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - Supabase account
 - Google Cloud Console account (for OAuth)
 - Netlify account (for deployment)
 
 ### 1. Clone and Install
+
 ```bash
 git clone <repository-url>
 cd bank-o-bryan
@@ -48,6 +53,7 @@ npm install
 ```
 
 ### 2. Supabase Setup
+
 1. Create a new Supabase project at [supabase.com](https://supabase.com)
 2. Copy your project URL and anon key
 3. Set up Google OAuth in Supabase Auth settings:
@@ -56,7 +62,9 @@ npm install
    - Add your Google OAuth credentials
 
 ### 3. Environment Variables
+
 Create `.env.local`:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -64,6 +72,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
 ### 4. Database Migration
+
 ```bash
 # Install Supabase CLI
 npm install -g supabase
@@ -77,6 +86,7 @@ supabase db push
 ```
 
 ### 5. Deploy Edge Functions
+
 ```bash
 supabase functions deploy accrueInterest
 supabase functions deploy projection
@@ -84,6 +94,7 @@ supabase functions deploy projectionWithSim
 ```
 
 ### 6. Local Development
+
 ```bash
 npm run dev
 ```
@@ -91,22 +102,26 @@ npm run dev
 ## 🗄️ Database Schema
 
 ### Core Tables
+
 - **families** - Family units with settings and timezone
 - **parents** - Parent accounts linked to Google OAuth
 - **children** - Child profiles with personalization
 - **accounts** - Financial accounts for each child
 
-### Financial Tables  
+### Financial Tables
+
 - **interest_tiers** - Configurable interest rate tiers
 - **transactions** - All financial transactions (deposits, withdrawals, interest)
 - **interest_runs** - Tracking of daily interest calculation jobs
 
 ### Feature Tables
+
 - **goals** - Savings goals with target amounts and dates
 - **rewards** - Reward system with delivery tracking  
 - **audit_log** - Comprehensive activity logging
 
 ### Security
+
 - **Row Level Security (RLS)** enabled on all tables
 - **Family-scoped policies** ensure data isolation
 - **Indexes** on frequently queried columns for performance
@@ -114,11 +129,13 @@ npm run dev
 ## 🔧 API Functions
 
 ### Edge Functions
+
 1. **accrueInterest** - Daily cron job for calculating and applying interest
 2. **projection** - Generate baseline 12-month financial projections
 3. **projectionWithSim** - Generate projections with simulation parameters
 
 ### Key Features
+
 - Proper error handling and logging
 - Family-scoped data access
 - Efficient interest calculation using Postgres functions
@@ -146,12 +163,14 @@ src/
 ## 🔒 Security & Privacy
 
 ### Data Protection
+
 - No real money transactions - virtual ledger only
 - Family data isolation via RLS policies
 - Secure OAuth integration
 - Audit logging for compliance
 
 ### Access Control
+
 - Parents can only access their family data
 - Children cannot modify financial data
 - Service role keys never exposed client-side
@@ -167,13 +186,36 @@ src/
 ## 🚀 Deployment
 
 ### Netlify Deployment
+
 1. Connect your GitHub repository to Netlify
 2. Set environment variables in Netlify dashboard (do not commit secrets)
 3. Configure build settings:
    - Build command: `npm run build`
    - Publish directory: `.next`
 
+### SSR Landing Page and Non-JS Fallback
+
+The root route `/` is rendered SSR-first with a small client island for sign-in and redirects. This ensures meaningful HTML for crawlers and non-JS environments.
+
+- Server-rendered: marketing hero, features, CTA container
+- Client island: interactive Google sign-in + redirect logic
+- Non-JS: global `<noscript>` notice; landing content remains readable
+
+Validate locally:
+
+```
+pnpm build && pnpm start
+curl -s http://localhost:3000 | sed -n '1,160p'
+```
+
+Check production:
+
+```
+curl -s https://bankobryan.netlify.app | sed -n '1,160p'
+```
+
 ### Environment Variables for Production
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
@@ -181,7 +223,9 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
 ### OAuth Redirect URLs
+
 Add these URLs to your Google OAuth configuration:
+
 - Development: `http://localhost:3000/auth/callback`
 - Production: `https://your-netlify-domain.netlify.app/auth/callback`
 
@@ -195,6 +239,7 @@ Add these URLs to your Google OAuth configuration:
 ## 🧪 Testing
 
 Run the test suite:
+
 ```bash
 npm test
 ```
@@ -214,6 +259,7 @@ MIT License - see LICENSE file for details
 ## 🆘 Support
 
 For issues and questions:
+
 1. Check the GitHub issues
 2. Review Supabase documentation
 3. Contact support team
@@ -221,6 +267,7 @@ For issues and questions:
 ---
 
 **Bank o'Bryan** - Teaching kids financial responsibility through play! 🎯💰
+
 ## 🛠️ PRD Schema Update (2025-08-07)
 
 A new migration file `supabase/migrations/20250807_prd_mvp.sql` introduces the `families`, `parents`, `children`, `accounts`, `transactions_prd`, `interest_runs_prd`, `interest_tiers_prd`, `goals`, `rewards` and `audit_log` tables to align the database with the Product Requirements Document (PRD).  Apply this migration after linking your Supabase project.  Existing legacy tables (`interest_tiers`, `transactions`, `interest_runs`) are left untouched for backward compatibility.
