@@ -76,7 +76,7 @@ Deno.serve(async (req: Request) => {
 
     // Get active interest tiers
     const { data: tiers, error: tiersError } = await supabase
-      .from('interest_tiers_prd')
+      .from('interest_tiers')
       .select('lower_bound_cents, upper_bound_cents, apr_bps, effective_from, effective_to')
       .order('lower_bound_cents', { ascending: true });
 

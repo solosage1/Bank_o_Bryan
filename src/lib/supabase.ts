@@ -59,7 +59,11 @@ export const signInWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')}/auth/callback`
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')}/auth/callback`,
+      queryParams: {
+        // Ensure Google shows the account chooser instead of silently reusing the existing session
+        prompt: 'select_account'
+      }
     }
   });
   if (error) throw error;

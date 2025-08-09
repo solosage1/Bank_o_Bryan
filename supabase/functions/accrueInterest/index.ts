@@ -79,7 +79,7 @@ Deno.serve(async (req: Request) => {
 
           // fetch tiers for this date
           const { data: tiers } = await supabase
-            .from('interest_tiers_prd')
+            .from('interest_tiers')
             .select('lower_bound_cents, upper_bound_cents, apr_bps, effective_from, effective_to')
             .lte('effective_from', runDate)
             .or(`effective_to.is.null,effective_to.gte.${runDate}`)

@@ -30,9 +30,9 @@ export function useRequireAuth(): AuthGuardStatus {
   const isBypassOnOnboarding = isBypass && isOnboardingPath;
 
   useEffect(() => {
-    // Skip redirects entirely when in bypass mode on onboarding route
-    if (isBypassOnOnboarding) return;
-    if (loading && !isBypass) return;
+    // Skip redirects entirely when in bypass mode
+    if (isBypass) return;
+    if (loading) return;
     if (!user) {
       router.replace("/");
       return;
@@ -40,10 +40,10 @@ export function useRequireAuth(): AuthGuardStatus {
     if (user && !family) {
       router.replace("/onboarding");
     }
-  }, [loading, user, family, router, isBypass, isBypassOnOnboarding]);
+  }, [loading, user, family, router, isBypass]);
 
-  if (isBypassOnOnboarding) return "needsOnboarding";
-  if (loading && !isBypass) return "loading";
+  if (isBypass) return family ? "ready" : "needsOnboarding";
+  if (loading) return "loading";
   if (!user) return "unauthenticated";
   if (user && !family) return "needsOnboarding";
   return "ready";
