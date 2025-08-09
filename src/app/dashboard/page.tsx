@@ -16,10 +16,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { track } from '@/components/analytics/track';
 import { supabase } from '@/lib/supabase';
 import type { ChildWithAccount } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, parent, family, loading: authLoading, signOut } = useAuth();
+  const { toast } = useToast();
   const [children, setChildren] = useState<ChildWithAccount[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [transactionModal, setTransactionModal] = useState<{
@@ -32,6 +34,7 @@ export default function DashboardPage() {
   const [isAddChildOpen, setIsAddChildOpen] = useState<boolean>(false);
   const [newChild, setNewChild] = useState<{ name: string; age?: string; nickname?: string }>({ name: '', age: '', nickname: '' });
   const [isCreatingChild, setIsCreatingChild] = useState<boolean>(false);
+  const [createChildError, setCreateChildError] = useState<string | null>(null);
 
   // Fetch children and their accounts
   const fetchChildren = useCallback(async () => {
@@ -120,6 +123,7 @@ export default function DashboardPage() {
 
   const openAddChild = () => {
     setNewChild({ name: '', age: '', nickname: '' });
+    setCreateChildError(null);
     setIsAddChildOpen(true);
   };
 
@@ -128,6 +132,7 @@ export default function DashboardPage() {
     if (!newChild.name.trim()) return;
     try {
       setIsCreatingChild(true);
+      setCreateChildError(null);
       track('child_added', { phase: 'attempt', source: 'dashboard', has_age: Boolean(newChild.age), has_nickname: Boolean(newChild.nickname) });
 
       const { data: childRow, error: childErr } = await supabase
@@ -144,9 +149,10 @@ export default function DashboardPage() {
       if (childErr) throw childErr;
 
       if (childRow?.id) {
+        // Insert minimal account row to satisfy both legacy and PRD schemas (defaults fill the rest)
         const { error: acctErr } = await supabase
           .from('accounts')
-          .insert({ child_id: childRow.id, balance: 0, total_earned: 0 });
+          .insert({ child_id: childRow.id });
         if (acctErr) throw acctErr;
 
         // Audit (best-effort)
@@ -163,15 +169,33 @@ export default function DashboardPage() {
         } catch (_) { /* noop */ }
 
         track('child_added', { phase: 'success', child_id: childRow.id });
+        toast({ title: 'Child created', description: `${childRow.name} was added to your family.` });
+        setIsAddChildOpen(false);
+        await fetchChildren();
+        return;
       }
-
-      setIsAddChildOpen(false);
-      await fetchChildren();
+      // Fallback: if no id returned, treat as error
+      throw new Error('Child creation returned no id');
     } catch (error) {
       console.error('Error creating child:', error);
       track('child_added', { phase: 'error', message: error instanceof Error ? error.message : String(error) });
+      const message = error instanceof Error ? error.message : 'Failed to create child';
+      setCreateChildError(message);
+      toast({ title: 'Failed to create child', description: message, variant: 'destructive' });
     } finally {
       setIsCreatingChild(false);
+    }
+  };
+
+  const createAccountForChild = async (childId: string, childName: string) => {
+    try {
+      const { error } = await supabase.from('accounts').insert({ child_id: childId });
+      if (error) throw error;
+      toast({ title: 'Account created', description: `Account for ${childName} is ready.` });
+      await fetchChildren();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create account';
+      toast({ title: 'Account creation failed', description: message, variant: 'destructive' });
     }
   };
 
@@ -400,7 +424,7 @@ export default function DashboardPage() {
                         ) : (
                           <div className="text-center py-4">
                             <p className="text-gray-500 mb-3">No account created</p>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => createAccountForChild(child.id, child.name)}>
                               Create Account
                             </Button>
                           </div>
@@ -467,6 +491,11 @@ export default function DashboardPage() {
                 />
               </div>
             </div>
+            {createChildError && (
+              <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md" role="alert">
+                {createChildError}
+              </div>
+            )}
             <div className="flex justify-end space-x-2 pt-2">
               <Button variant="outline" onClick={() => setIsAddChildOpen(false)} disabled={isCreatingChild}>Cancel</Button>
               <Button onClick={createChildAndAccount} disabled={isCreatingChild || !newChild.name.trim()}>
