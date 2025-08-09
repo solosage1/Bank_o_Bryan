@@ -1,0 +1,17 @@
+[
+  {
+    "path": "/",
+    "resourceSizes": [
+      { "resourceType": "script", "budget": 92160 },
+      { "resourceType": "stylesheet", "budget": 15360 }
+    ],
+    "resourceCounts": [
+      { "resourceType": "total", "budget": 20 }
+    ],
+    "timings": [
+      { "metric": "long-tasks", "budget": 300 }
+    ]
+  }
+]
+
+

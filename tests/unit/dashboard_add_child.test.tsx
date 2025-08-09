@@ -65,14 +65,17 @@ describe('Dashboard Add Child', () => {
 
   it('opens and closes Add Child modal', async () => {
     vi.doMock('@/lib/supabase', () => ({ supabase: { from: fromMock, rpc: vi.fn(() => Promise.resolve({ data: null, error: null })) } }));
-    const { default: DashboardPage } = await import('@/app/dashboard/page');
+    const { default: DashboardPage } = await import('@/app/(app)/dashboard/page');
     render(<DashboardPage />);
     // Wait for loading state to clear (handle potential duplicates)
     // Dismiss loading state by simulating auth resolved with family
     // Our mocked useAuth already returns user+family with loading:false, but the component sets isFetching during fetchChildren.
     // Since fetchChildren uses our mocked supabase.select synchronously, the loading UI should disappear on the next tick.
     await waitFor(() => expect(screen.queryByText(/Loading dashboard/i)).toBeNull());
-    const addBtn = await screen.findByRole('button', { name: /Add Child/i });
+    const addBtn = (await screen.findAllByRole('button')).find(
+      (b) => /Add Child/i.test(b.textContent || '') || /Add Your First Child/i.test(b.textContent || '')
+    ) as HTMLElement;
+    expect(addBtn).toBeTruthy();
     fireEvent.click(addBtn);
     expect(screen.getByRole('dialog')).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
@@ -81,10 +84,13 @@ describe('Dashboard Add Child', () => {
 
   it('creates child and account, closes modal, and toasts', async () => {
     vi.doMock('@/lib/supabase', () => ({ supabase: { from: fromMock, rpc: vi.fn(() => Promise.resolve({ data: null, error: null })) } }));
-    const { default: DashboardPage } = await import('@/app/dashboard/page');
+    const { default: DashboardPage } = await import('@/app/(app)/dashboard/page');
     render(<DashboardPage />);
     await waitFor(() => expect(screen.queryByText(/Loading dashboard/i)).toBeNull());
-    const addBtn = await screen.findByRole('button', { name: /Add Child/i });
+    const addBtn = (await screen.findAllByRole('button')).find(
+      (b) => /Add Child/i.test(b.textContent || '') || /Add Your First Child/i.test(b.textContent || '')
+    ) as HTMLElement;
+    expect(addBtn).toBeTruthy();
     fireEvent.click(addBtn);
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Avery' } });
     fireEvent.click(screen.getByRole('button', { name: /Create Child/i }));
@@ -95,7 +101,7 @@ describe('Dashboard Add Child', () => {
 
   it('shows inline error and destructive toast when child insert fails', async () => {
     vi.doMock('@/lib/supabase', () => ({ supabase: { from: fromMock, rpc: vi.fn(() => Promise.resolve({ data: null, error: null })) } }));
-    const { default: DashboardPage } = await import('@/app/dashboard/page');
+    const { default: DashboardPage } = await import('@/app/(app)/dashboard/page');
     fromMock.mockImplementation((table: string) => {
       if (table === 'children') {
         return {
@@ -119,7 +125,10 @@ describe('Dashboard Add Child', () => {
 
     render(<DashboardPage />);
     await waitFor(() => expect(screen.queryByText(/Loading dashboard/i)).toBeNull());
-    const addBtn = await screen.findByRole('button', { name: /Add Child/i });
+    const addBtn = (await screen.findAllByRole('button')).find(
+      (b) => /Add Child/i.test(b.textContent || '') || /Add Your First Child/i.test(b.textContent || '')
+    ) as HTMLElement;
+    expect(addBtn).toBeTruthy();
     fireEvent.click(addBtn);
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Err' } });
     fireEvent.click(screen.getByRole('button', { name: /Create Child/i }));
@@ -131,7 +140,7 @@ describe('Dashboard Add Child', () => {
 
   it('account insert fails -> destructive toast; UI continues', async () => {
     vi.doMock('@/lib/supabase', () => ({ supabase: { from: fromMock, rpc: vi.fn(() => Promise.resolve({ data: null, error: null })) } }));
-    const { default: DashboardPage } = await import('@/app/dashboard/page');
+    const { default: DashboardPage } = await import('@/app/(app)/dashboard/page');
     fromMock.mockImplementation((table: string) => {
       if (table === 'children') {
         return {
@@ -158,7 +167,10 @@ describe('Dashboard Add Child', () => {
 
     render(<DashboardPage />);
     await waitFor(() => expect(screen.queryByText(/Loading dashboard/i)).toBeNull());
-    const addBtn = await screen.findByRole('button', { name: /Add Child/i });
+    const addBtn = (await screen.findAllByRole('button')).find(
+      (b) => /Add Child/i.test(b.textContent || '') || /Add Your First Child/i.test(b.textContent || '')
+    ) as HTMLElement;
+    expect(addBtn).toBeTruthy();
     fireEvent.click(addBtn);
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Sky' } });
     fireEvent.click(screen.getByRole('button', { name: /Create Child/i }));

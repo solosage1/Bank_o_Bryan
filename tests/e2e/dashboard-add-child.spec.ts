@@ -1,4 +1,5 @@
 import { test, expect, Page, Request } from '@playwright/test';
+import { primeBypassAndFamily } from './utils/prime';
 
 async function primeBypass(page: Page) {
   await page.addInitScript(() => localStorage.setItem('E2E_BYPASS', '1'));
@@ -62,12 +63,13 @@ test.describe('Dashboard Add Child', () => {
       return route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
     });
 
+    await primeBypassAndFamily(page);
     await page.goto('/dashboard');
-    // Be precise to avoid strict-mode ambiguity among multiple Children headings
-    await expect(page.getByRole('heading', { level: 2, name: /Children/ })).toBeVisible();
+    // Assert robust header
+    await expect(page.getByTestId('children-header')).toBeVisible();
 
     // Open modal
-    await page.getByRole('button', { name: /Add Child/i }).click();
+    await page.getByRole('button').filter({ hasText: /Add (Your First )?Child/i }).first().click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
 
@@ -103,8 +105,9 @@ test.describe('Dashboard Add Child', () => {
       return route.fallback();
     });
 
+    await primeBypassAndFamily(page);
     await page.goto('/dashboard');
-    await page.getByRole('button', { name: /Add Child/i }).click();
+    await page.getByRole('button').filter({ hasText: /Add (Your First )?Child/i }).first().click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
 
@@ -139,8 +142,9 @@ test.describe('Dashboard Add Child', () => {
       return route.fallback();
     });
 
+    await primeBypassAndFamily(page);
     await page.goto('/dashboard');
-    await page.getByRole('button', { name: /Add Child/i }).click();
+    await page.getByRole('button').filter({ hasText: /Add (Your First )?Child/i }).first().click();
     await page.getByLabel('Name', { exact: true }).fill('Sky');
     await page.getByRole('button', { name: /Create Child/i }).click();
 

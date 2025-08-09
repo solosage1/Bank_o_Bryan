@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, signInWithGoogle as signInGoogle, signOut as signOutAuth } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Parent, Family, AuthContextType } from '@/types';
 
@@ -18,7 +17,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Helpful debug signal for single-click verification
       // eslint-disable-next-line no-console
       console.info('auth:signInWithGoogle invoked');
-      await signInGoogle();
+      const mod = await import('@/lib/supabase');
+      await mod.signInWithGoogle();
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;
@@ -35,7 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // noop
         }
       }
-      await signOutAuth();
+      const mod = await import('@/lib/supabase');
+      await mod.signOut();
       setUser(null);
       setParent(null);
       setFamily(null);
@@ -53,16 +54,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         window.localStorage.getItem('E2E_BYPASS') === '1'
       ));
     if (isBypass) {
-      // Hydrate from localStorage in bypass mode
+      // Hydrate from localStorage in bypass mode ONLY if keys exist; otherwise leave nulls to allow onboarding
       if (typeof window !== 'undefined') {
         try {
           const storedParent = window.localStorage.getItem('E2E_PARENT');
           const storedFamily = window.localStorage.getItem('E2E_FAMILY');
-          setParent(storedParent ? JSON.parse(storedParent) : { id: 'p-e2e', name: 'E2E Parent' } as any);
-          setFamily(storedFamily ? JSON.parse(storedFamily) : { id: 'fam-e2e', name: 'E2E Family', timezone: 'America/New_York', sibling_visibility: true, created_at: '' } as any);
+          setParent(storedParent ? JSON.parse(storedParent) : null);
+          setFamily(storedFamily ? JSON.parse(storedFamily) : null);
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.warn('bypass: failed to hydrate E2E_PARENT/E2E_FAMILY');
+          setParent(null);
+          setFamily(null);
         }
       }
       return;
@@ -78,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchParentAndFamily = async (userId: string) => {
     try {
+      const { supabase } = await import('@/lib/supabase');
       const { data: parentData, error: parentError } = await supabase
         .from('parents')
         .select(`
@@ -113,20 +116,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         (new URLSearchParams(window.location.search).get('e2e') === '1' ||
          window.localStorage.getItem('E2E_BYPASS') === '1'));
 
+    // On the public home page, avoid initializing Supabase auth entirely to keep initial JS small
+    // Auth-aware pages will still mount the provider and trigger initialization below.
+    const isPublicHome = typeof window !== 'undefined' && window.location.pathname === '/';
+
     if (isBypass) {
       setUser({ id: 'e2e-user' } as unknown as User);
       if (typeof window !== 'undefined') {
         try {
           const storedParent = window.localStorage.getItem('E2E_PARENT');
           const storedFamily = window.localStorage.getItem('E2E_FAMILY');
-          setParent(storedParent ? JSON.parse(storedParent) : { id: 'p-e2e', name: 'E2E Parent' } as any);
-          setFamily(storedFamily ? JSON.parse(storedFamily) : { id: 'fam-e2e', name: 'E2E Family', timezone: 'America/New_York', sibling_visibility: true, created_at: '' } as any);
+          setParent(storedParent ? JSON.parse(storedParent) : null);
+          setFamily(storedFamily ? JSON.parse(storedFamily) : null);
           const onStorage = (ev: StorageEvent) => {
             if (ev.key === 'E2E_PARENT' || ev.key === 'E2E_FAMILY') {
               const p = window.localStorage.getItem('E2E_PARENT');
               const f = window.localStorage.getItem('E2E_FAMILY');
-              setParent(p ? JSON.parse(p) : { id: 'p-e2e', name: 'E2E Parent' } as any);
-              setFamily(f ? JSON.parse(f) : { id: 'fam-e2e', name: 'E2E Family', timezone: 'America/New_York', sibling_visibility: true, created_at: '' } as any);
+              setParent(p ? JSON.parse(p) : null);
+              setFamily(f ? JSON.parse(f) : null);
             }
           };
           window.addEventListener('storage', onStorage);
@@ -137,9 +144,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (isPublicHome) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     const getInitialSession = async () => {
       try {
+        const { supabase } = await import('@/lib/supabase');
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
 
@@ -157,22 +170,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getInitialSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
+    let unsubscribe: (() => void) | undefined;
+    (async () => {
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          setUser(session?.user ?? null);
 
-        if (event === 'SIGNED_IN' && session?.user) {
-          await fetchParentAndFamily(session.user.id);
-        } else if (event === 'SIGNED_OUT') {
-          setParent(null);
-          setFamily(null);
+          if (event === 'SIGNED_IN' && session?.user) {
+            await fetchParentAndFamily(session.user.id);
+          } else if (event === 'SIGNED_OUT') {
+            setParent(null);
+            setFamily(null);
+          }
+
+          setLoading(false);
         }
+      );
+      unsubscribe = () => subscription.unsubscribe();
+    })();
 
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const value: AuthContextType = {

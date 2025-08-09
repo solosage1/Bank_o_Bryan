@@ -284,7 +284,14 @@ export default function DashboardPage() {
               {family?.name} Dashboard
             </h1>
             <p className="text-gray-600">
-              Welcome back, {parent?.name}! Manage your family&apos;s virtual banking.
+              {(() => {
+                const fallbackName = (parent?.name || (user as any)?.user_metadata?.full_name || (user as any)?.email || '').trim();
+                return fallbackName ? (
+                  <>Welcome back, {fallbackName}! Manage your family&apos;s virtual banking.</>
+                ) : (
+                  <>Welcome back! Manage your family&apos;s virtual banking.</>
+                );
+              })()}
             </p>
           </div>
           <div className="flex items-center space-x-3">
@@ -292,7 +299,7 @@ export default function DashboardPage() {
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </Button>
-            <Button variant="outline" size="sm" onClick={signOut}>
+            <Button variant="outline" size="sm" onClick={async () => { await signOut(); router.replace('/'); }}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
@@ -355,10 +362,12 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Children&apos;s Accounts</h2>
-            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={openAddChild}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Child
-            </Button>
+            {children.length > 0 && (
+              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600" onClick={openAddChild}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Child
+              </Button>
+            )}
           </div>
 
           {children.length === 0 ? (
@@ -373,7 +382,7 @@ export default function DashboardPage() {
                 <p className="text-gray-600 mb-6">
                   Add your first child to start their banking journey!
                 </p>
-                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={openAddChild}>
+                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600" onClick={openAddChild}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Your First Child
                 </Button>
@@ -389,7 +398,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
-                    <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
+                    <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-200 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-600">
                       <CardHeader className="pb-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
@@ -398,8 +407,14 @@ export default function DashboardPage() {
                             </span>
                           </div>
                           <div>
-                            <CardTitle className="text-lg">{child.name}</CardTitle>
-                            <CardDescription>Age {child.age}</CardDescription>
+                            <CardTitle className="text-lg">
+                              <a href={`/child/${child.id}`} className="outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 rounded">
+                                {child.name}
+                              </a>
+                            </CardTitle>
+                            {child.age != null && String(child.age).trim() !== '' && (
+                              <CardDescription>Age {child.age}</CardDescription>
+                            )}
                           </div>
                         </div>
                       </CardHeader>
@@ -419,7 +434,7 @@ export default function DashboardPage() {
                             <div className="flex space-x-2">
                               <Button
                                 size="sm"
-                                className="flex-1 bg-green-600 hover:bg-green-700"
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600"
                                 onClick={() => openTransactionModal(
                                   child.id,
                                   child.name,
@@ -433,7 +448,7 @@ export default function DashboardPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="flex-1"
+                                className="flex-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600"
                                 onClick={() => openTransactionModal(
                                   child.id,
                                   child.name,
@@ -474,6 +489,7 @@ export default function DashboardPage() {
           accountId={transactionModal.accountId}
           type={transactionModal.type}
           onSuccess={handleTransactionSuccess}
+          availableBalanceCents={Math.round((children.find(c => c.id === transactionModal.childId)?.account?.balance || 0) * 100)}
         />
       )}
 
@@ -543,3 +559,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+

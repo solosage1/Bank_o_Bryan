@@ -1,7 +1,9 @@
 import { Banknote, Sparkles, Target, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import SignInIsland from '@/app/_components/SignInIsland';
+import dynamic from 'next/dynamic';
+
+const SignInIsland = dynamic(() => import('@/app/_components/SignInIsland'), { ssr: false });
 
 export default function HomePage(): JSX.Element {
   const features = [
@@ -89,9 +91,9 @@ export default function HomePage(): JSX.Element {
                 <div className="mt-6 text-center">
                   <p className="text-sm text-gray-500">
                     By signing in, you agree to our{' '}
-                    <Link href="/legal/terms" className="underline underline-offset-2 hover:text-gray-700">terms of service</Link>
+                    <Link prefetch={false} href="/legal/terms" className="underline underline-offset-2 hover:text-gray-700">terms of service</Link>
                     {' '}and{' '}
-                    <Link href="/legal/privacy" className="underline underline-offset-2 hover:text-gray-700">privacy policy</Link>.
+                    <Link prefetch={false} href="/legal/privacy" className="underline underline-offset-2 hover:text-gray-700">privacy policy</Link>.
                   </p>
                 </div>
               </CardContent>
@@ -102,3 +104,5 @@ export default function HomePage(): JSX.Element {
     </div>
   );
 }
+
+
