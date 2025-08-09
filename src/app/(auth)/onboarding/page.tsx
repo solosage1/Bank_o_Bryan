@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,6 +19,12 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useRedirectOnReady } from '@/hooks/useRedirectOnReady';
 import { supabase } from '@/lib/supabase';
 import { track } from '@/components/analytics/track';
+import { Toaster } from '@/components/ui/toaster';
+
+const MotionDiv = dynamic(async () => {
+  const m = await import('framer-motion');
+  return function MD(props: any) { return <m.motion.div {...props} />; };
+}, { ssr: false }) as any;
 
 const familySchema = z.object({
   familyName: z.string().min(1, 'Family name is required').max(50, 'Family name too long'),
@@ -202,7 +208,8 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <motion.div
+      <Toaster />
+      <MotionDiv
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -210,14 +217,14 @@ export default function OnboardingPage() {
       >
         <Card className="shadow-xl border-0">
           <CardHeader className="text-center pb-8">
-            <motion.div
+            <MotionDiv
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5 }}
               className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mx-auto mb-6"
             >
               <Home className="w-8 h-8 text-white" />
-            </motion.div>
+            </MotionDiv>
             <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
               Welcome to Bank o&apos;Bryan!
             </CardTitle>
@@ -331,7 +338,7 @@ export default function OnboardingPage() {
             </form>
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionDiv>
     </div>
   );
 }

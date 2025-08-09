@@ -32,6 +32,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const transactionSchema = z.object({
   amount: z
@@ -63,6 +64,7 @@ interface TransactionModalProps {
   accountId: string;
   type: 'deposit' | 'withdrawal';
   onSuccess: () => void;
+  availableBalanceCents?: number;
 }
 
 export function TransactionModal({
@@ -72,13 +74,16 @@ export function TransactionModal({
   childName,
   accountId,
   type,
-  onSuccess
+  onSuccess,
+  availableBalanceCents
 }: TransactionModalProps) {
   const { parent } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
+    mode: 'onChange',
     defaultValues: {
       amount: '',
       description: '',
@@ -86,10 +91,24 @@ export function TransactionModal({
     },
   });
 
+  const amountStr = form.watch('amount');
+  const amountCents = (() => {
+    const num = parseFloat(amountStr || '0');
+    return Number.isFinite(num) ? Math.round(num * 100) : 0;
+  })();
+  const insufficientFunds = type === 'withdrawal' && availableBalanceCents != null && amountCents > availableBalanceCents;
+
   const onSubmit = async (data: TransactionFormData) => {
     if (!parent) return;
 
     try {
+      if (type === 'withdrawal' && availableBalanceCents != null) {
+        const cents = Math.round(parseFloat(data.amount) * 100);
+        if (cents > availableBalanceCents) {
+          form.setError('amount', { message: 'Insufficient funds' });
+          return;
+        }
+      }
       setIsSubmitting(true);
 
       const { error } = await supabase.rpc('process_transaction', {
@@ -124,6 +143,10 @@ export function TransactionModal({
       form.reset();
       onSuccess();
       onClose();
+      toast({
+        title: 'Success',
+        description: `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} of $${parseFloat(data.amount).toFixed(2)} processed for ${childName}.`
+      });
     } catch (error) {
       console.error('Transaction error:', error);
       form.setError('root', {
@@ -190,6 +213,9 @@ export function TransactionModal({
                         <FormDescription>
                           Enter the amount to {type}
                         </FormDescription>
+                        {insufficientFunds && (
+                          <div className="text-sm text-red-600">Cannot withdraw more than available balance.</div>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -279,7 +305,7 @@ export function TransactionModal({
                     </Button>
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !form.formState.isValid || insufficientFunds}
                       className={cn('flex-1', buttonColor)}
                     >
                       {isSubmitting ? (

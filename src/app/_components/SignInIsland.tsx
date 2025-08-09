@@ -7,7 +7,16 @@ import { Icons } from '@/components/ui/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import type { AuthGuardStatus } from '@/hooks/useRequireAuth';
-import { track } from '@/components/analytics/track';
+type TrackArgs = Parameters<typeof import('@/components/analytics/track').track>;
+const track = (...args: TrackArgs) => {
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.log('[analytics]', ...args);
+    return;
+  }
+  // Dynamically import only if needed in production
+  import('@/components/analytics/track').then((mod: any) => (mod.track as (...a: TrackArgs) => void)(...args)).catch(() => {});
+};
 
 export default function SignInIsland(): JSX.Element {
   const { user, family, loading, signInWithGoogle } = useAuth();

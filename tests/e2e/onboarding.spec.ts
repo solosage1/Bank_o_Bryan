@@ -22,9 +22,9 @@ test.describe('Onboarding happy path', () => {
     // Expect redirect to dashboard (guard bypass lets it continue in test env)
     await page.waitForURL('**/dashboard', { timeout: 15000 });
     await expect(page).toHaveURL(/\/dashboard$/);
-
-    // Smoke check dashboard contains any heading on the page
-    await expect(page.getByRole('heading').first()).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    // Assert a specific dashboard landmark for stability
+    await expect(page.getByText(/Children's Accounts/i)).toBeVisible();
   });
 });
 
