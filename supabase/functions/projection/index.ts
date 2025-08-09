@@ -6,13 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-interface ProjectionPoint {
-  month: number;
-  balance: number;
-  interestEarned: number;
-  totalInterest: number;
-  date: string;
-}
+interface Point { date: string; balance_cents: number }
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
@@ -53,7 +47,7 @@ Deno.serve(async (req: Request) => {
     // Verify access to account through RLS
     const { data: account, error: accountError } = await supabase
       .from('accounts')
-      .select('id, balance, child_id')
+      .select('id, current_balance_cents, child_id, as_of')
       .eq('id', accountId)
       .single();
 
@@ -73,71 +67,42 @@ Deno.serve(async (req: Request) => {
     // Get active interest tiers
     const { data: tiers, error: tiersError } = await supabase
       .from('interest_tiers')
-      .select('min_balance, max_balance, annual_rate')
-      .eq('is_active', true)
-      .order('min_balance', { ascending: true });
+      .select('lower_bound_cents, upper_bound_cents, apr_bps, effective_from, effective_to')
+      .order('lower_bound_cents', { ascending: true });
 
     if (tiersError) {
       throw new Error(`Failed to fetch interest tiers: ${tiersError.message}`);
     }
 
-    // Function to calculate interest rate for a given balance
-    function getInterestRate(balance: number): number {
-      for (let i = tiers.length - 1; i >= 0; i--) {
-        const tier = tiers[i];
-        if (balance >= tier.min_balance && 
-            (tier.max_balance === null || balance <= tier.max_balance)) {
-          return tier.annual_rate;
-        }
-      }
-      return 0; // No tier found
-    }
-
-    // Generate 12-month projection
-    const projections: ProjectionPoint[] = [];
-    let currentBalance = account.balance;
-    let totalInterestEarned = 0;
     const startDate = new Date();
-
-    for (let month = 0; month <= 12; month++) {
-      const projectionDate = new Date(startDate);
-      projectionDate.setMonth(startDate.getMonth() + month);
-
-      if (month === 0) {
-        // Current state
-        projections.push({
-          month,
-          balance: currentBalance,
-          interestEarned: 0,
-          totalInterest: totalInterestEarned,
-          date: projectionDate.toISOString().split('T')[0]
-        });
-      } else {
-        // Calculate interest for this month
-        const annualRate = getInterestRate(currentBalance);
-        const monthlyRate = annualRate / 12;
-        const monthlyInterest = currentBalance * monthlyRate;
-        
-        currentBalance += monthlyInterest;
-        totalInterestEarned += monthlyInterest;
-
-        projections.push({
-          month,
-          balance: Math.round(currentBalance * 100) / 100,
-          interestEarned: Math.round(monthlyInterest * 100) / 100,
-          totalInterest: Math.round(totalInterestEarned * 100) / 100,
-          date: projectionDate.toISOString().split('T')[0]
-        });
+    const horizonDays = 365;
+    const points: Point[] = [];
+    let principal = account.current_balance_cents as number;
+    let carryMicros = 0;
+    for (let i = 0; i <= horizonDays; i++) {
+      const d = new Date(startDate.getTime() + i * 24 * 3600 * 1000);
+      const dateStr = d.toISOString().slice(0, 10);
+      const active = (tiers || []).filter(t =>
+        t.effective_from <= dateStr && (!t.effective_to || t.effective_to >= dateStr)
+      ).map(t => ({
+        lower_cents: t.lower_bound_cents as number,
+        upper_cents: (t.upper_bound_cents as number | null) ?? undefined,
+        apr_bps: t.apr_bps as number,
+      }));
+      let dailyMicros = 0;
+      for (const s of active) {
+        const upper = s.upper_cents ?? Number.MAX_SAFE_INTEGER;
+        const inTier = Math.max(0, Math.min(principal, upper) - s.lower_cents);
+        if (inTier > 0) dailyMicros += Math.round(inTier * (s.apr_bps / 10000 / 365) * 1_000_000);
       }
+      const totalMicros = dailyMicros + carryMicros;
+      const cents = Math.trunc(totalMicros / 1_000_000);
+      carryMicros = totalMicros - cents * 1_000_000;
+      if (i > 0 && cents !== 0) principal += cents;
+      points.push({ date: dateStr, balance_cents: principal });
     }
 
-    const result = {
-      account_id: accountId,
-      starting_balance: account.balance,
-      projections,
-      interest_tiers: tiers,
-      generated_at: new Date().toISOString()
-    };
+    const result = { account_id: accountId, baseline: points, generated_at: new Date().toISOString() };
 
     return new Response(
       JSON.stringify(result),

@@ -1,20 +1,19 @@
 [build]
-  command = "npm run build"
-  publish = "out"
+  command = "pnpm build"
+  publish = ".next"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [build.environment]
-  NEXT_PUBLIC_SUPABASE_URL = ""
-  NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
-
-[[redirects]]
-  from = "/auth/*"
-  to = "/auth/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  NPM_FLAGS = "--no-fund --no-audit"
+  NPM_CONFIG_FUND = "false"
+  NPM_CONFIG_AUDIT = "false"
+  NETLIFY_NEXT_PLUGIN_SKIP_INSTALL_CHECK = "true"
+  NODE_VERSION = "20"
 
 [[headers]]
   for = "/*"

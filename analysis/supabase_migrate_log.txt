@@ -1,0 +1,680 @@
+Using project: smgovvcbpncfsujynzcq
+Linking project...
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: open supabase/config.toml: no such file or directory
+Have you set up the project with supabase init?
+Pushing database migrations...
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: open supabase/config.toml: no such file or directory
+Have you set up the project with supabase init?
+Deploying edge functions...
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: open supabase/config.toml: no such file or directory
+Have you set up the project with supabase init?
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: open supabase/config.toml: no such file or directory
+Have you set up the project with supabase init?
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: open supabase/config.toml: no such file or directory
+Have you set up the project with supabase init?
+Verifying schema...
+Linking project...
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: toml: line 15 (last key "functions.verify_jwt"): type mismatch for config.function: expected table but found bool
+Try rerunning the command with --debug to troubleshoot the error.
+Pushing database migrations...
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: toml: line 15 (last key "functions.verify_jwt"): type mismatch for config.function: expected table but found bool
+Try rerunning the command with --debug to troubleshoot the error.
+Deploying edge functions...
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: toml: line 15 (last key "functions.verify_jwt"): type mismatch for config.function: expected table but found bool
+Try rerunning the command with --debug to troubleshoot the error.
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: toml: line 15 (last key "functions.verify_jwt"): type mismatch for config.function: expected table but found bool
+Try rerunning the command with --debug to troubleshoot the error.
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+cannot read config in /Users/rbgross/Github/Bank_o_Bryan: toml: line 15 (last key "functions.verify_jwt"): type mismatch for config.function: expected table but found bool
+Try rerunning the command with --debug to troubleshoot the error.
+Linking project...
+No seed files matched pattern: supabase/seed.sql
+failed to get api keys: json: cannot unmarshal string into Go struct field ApiKeyResponse.type of type map[string]interface {}
+Try rerunning the command with --debug to troubleshoot the error.
+Pushing database migrations...
+No seed files matched pattern: supabase/seed.sql
+Cannot find project ref. Have you run supabase link?
+Try rerunning the command with --debug to troubleshoot the error.
+
+---- APPLY 20250808005336_ivory_jungle.sql ----
+
+ERROR 20250808005336_ivory_jungle.sql: SQL failed (20250808005336_ivory_jungle.sql): 404 Not Found -> {"error":"requested path is invalid"}
+Missing SUPABASE_ACCESS_TOKEN in .env.local
+Installing/Upgrading Supabase CLI v2 via Homebrew...
+==> Upgrading 1 outdated package:
+supabase/tap/supabase 1.207.9 -> 2.33.9
+==> Fetching downloads for: supabase
+==> Fetching supabase/tap/supabase
+==> Downloading https://github.com/supabase/cli/releases/download/v2.33.9/supabase_darwin_amd64.tar.gz
+==> Downloading from https://release-assets.githubusercontent.com/github-production-release-asset/314160187/f71df619-ad7d-41f9-8f74-002024e91790?sp=r&sv=2018-11-09&sr=b&spr=https&se=2025-08-08T04%3A05%3A58Z&rscd=attachment%3B+filename%3Dsupabase_darwin_amd64.tar.gz&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2025-08-08T03%3A05%3A32Z&ske=2025-08-08T04%3A05%3A58Z&sks=b&skv=2018-11-09&sig=RQ%2BXMmyM6kyapSwbU1MDkb%2BQxNKVYqGBsvQiuFOntiM%3D&jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc1NDYyNDIzOCwibmJmIjoxNzU0NjIzOTM4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.KKjKrIWkIsdQEt3Ow4ZTZg_gEm7WpJTE1aSA6cqJC1c&response-content-disposition=attachment%3B%20filename%3Dsupabase_darwin_amd64.tar.gz&response-content-type=application%2Foctet-stream
+==> Upgrading supabase/tap/supabase
+  1.207.9 -> 2.33.9 
+🍺  /usr/local/Cellar/supabase/2.33.9: 9 files, 41.3MB, built in 14 seconds
+==> Running `brew cleanup supabase`...
+Disable this behaviour by setting `HOMEBREW_NO_INSTALL_CLEANUP=1`.
+Hide these hints with `HOMEBREW_NO_ENV_HINTS=1` (see `man brew`).
+Removing: /usr/local/Cellar/supabase/1.207.9... (9 files, 36.6MB)
+==> No outdated dependents to upgrade!
+==> `brew cleanup` has not been run in the last 30 days, running now...
+Disable this behaviour by setting `HOMEBREW_NO_INSTALL_CLEANUP=1`.
+Hide these hints with `HOMEBREW_NO_ENV_HINTS=1` (see `man brew`).
+Removing: /Users/rbgross/Library/Caches/Homebrew/ca-certificates--2025-05-20... (126.4KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/cairo--1.18.4... (736.1KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/fontconfig_bottle_manifest--2.16.0... (10.8KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/fontconfig--2.16.0... (378.5KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/freetype_bottle_manifest--2.13.3... (10.2KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/freetype--2.13.3... (936.9KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/gettext--0.25... (9.0MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/gh--2.74.1... (12.4MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/giflib_bottle_manifest--5.2.2... (8.3KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/giflib--5.2.2... (149.3KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/glib--2.84.2... (8.7MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/graphite2_bottle_manifest--1.3.14... (12KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/graphite2--1.3.14... (89.4KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/harfbuzz--11.2.1... (2.6MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/icu4c@76_bottle_manifest--76.1_1... (9.4KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/icu4c@76--76.1_1... (29.6MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/jpeg-turbo_bottle_manifest--3.1.0... (8KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/jpeg-turbo--3.1.0... (1.2MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libidn2--2.3.8... (304.3KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libpng--1.6.48... (446.2KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libtiff_bottle_manifest--4.7.0-1... (11.6KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libtiff--4.7.0... (1.8MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libunistring_bottle_manifest--1.3... (7KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libunistring--1.3... (1.7MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libx11--1.8.12... (2.2MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxau_bottle_manifest--1.0.12... (7.7KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxau--1.0.12... (32.7KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxcb_bottle_manifest--1.17.0-1... (14.2KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxcb--1.17.0... (978.9KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxdmcp_bottle_manifest--1.1.5... (9.4KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxdmcp--1.1.5... (36.3KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxext_bottle_manifest--1.3.6... (13KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxext--1.3.6... (106.2KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxrender_bottle_manifest--0.9.12... (10.5KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/libxrender--0.9.12... (53.3KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/little-cms2_bottle_manifest--2.17... (11.1KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/little-cms2--2.17... (423.0KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/llvm--20.1.6... (406.6MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/lz4_bottle_manifest--1.10.0-1... (10.2KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/lz4--1.10.0... (269.7KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/lzo_bottle_manifest--2.10... (14.2KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/lzo--2.10... (144.8KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/mpdecimal--4.0.1... (181.3KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/openssl@3--3.5.0... (10.2MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/pcre2--10.45... (2.2MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/pixman--0.46.2... (190.5KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/python-packaging_bottle_manifest--24.2... (1.9KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/python-packaging--24.2... (124.7KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/python@3.13--3.13.4... (17.2MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/readline_bottle_manifest--8.2.13... (10.1KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/readline--8.2.13... (577KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/sqlite--3.50.1... (2.2MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/xorgproto_bottle_manifest--2024.1... (16.1KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/xorgproto--2024.1... (700.3KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/xz--5.8.1... (730.6KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/z3--4.15.1... (12.6MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/zstd--1.5.7... (767KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/openjdk@17--17.0.15... (177.6MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/wget--1.25.0... (1.5MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/pipx--1.7.1_1... (250.8KB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/shellcheck--0.10.0... (13.8MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/openjdk@21--21.0.7... (191MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/icu4c@77--77.1... (29.7MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/Cask/temurin@11--11.0.27,6.pkg... (176.9MB)
+Removing: /Users/rbgross/Library/Caches/Homebrew/bootsnap/287d6b13bd97dfce385fd07e3348320940a44056e50552b059ee64db214471b8... (568 files, 4.7MB)
+Removing: /Users/rbgross/Library/Logs/Homebrew/glib... (64B)
+Removing: /Users/rbgross/Library/Logs/Homebrew/llvm... (64B)
+Removing: /Users/rbgross/Library/Logs/Homebrew/openssl@3... (64B)
+Removing: /Users/rbgross/Library/Logs/Homebrew/ca-certificates... (64B)
+Removing: /usr/local/lib/python3.9/site-packages/__pycache__/ghp_import.cpython-39.pyc... (8.7KB)
+Removing: /usr/local/lib/python3.9/site-packages/__pycache__/yaml_env_tag.cpython-39.pyc... (1.2KB)
+Pruned 2 symbolic links and 3 directories from /usr/local
+==> Caveats
+zsh completions have been installed to:
+  /usr/local/share/zsh/site-functions
+2.33.9
+Cleaning old config...
+Login with token...
+Hello from Supabase! Press Enter to open browser and login automatically.
+Here is your login link in case browser did not open https://supabase.com/dashboard/cli/login?session_id=3f84a73e-1fac-4e38-ae55-fdd3b23ca0d4&token_name=cli_rbgross@mac.lan_1754623963&public_key=0407b97d26444053477086dea09e99ae80f21d6b3dbf176a13b4f0f3bad8b5f6aa225d8a574d62801105a2ee5393ad6a4e1357ccf0511aa281294f1df032ae5fd0
+
+Enter your verification code: Token cli_rbgross@mac.lan_1754623963 created successfully.
+
+You are now logged in. Happy coding!
+Linking remote project...
+Initialising cli_login_postgres role...
+Forgot your password? Reset it from the Dashboard: https://supabase.com/dashboard/project/smgovvcbpncfsujynzcq/settings/database
+Enter your database password: 
+Connecting to remote database...
+failed to connect to postgres: failed to connect to `host=aws-0-us-east-1.pooler.supabase.com user=postgres.smgovvcbpncfsujynzcq database=postgres`: failed SASL auth (invalid SCRAM server-final-message received from server)
+Try rerunning the command with --debug to troubleshoot the error.
+Pushing migrations...
+Cannot find project ref. Have you run supabase link?
+Try rerunning the command with --debug to troubleshoot the error.
+Deploying edge functions...
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+WARNING: Docker is not running
+Uploading asset (accrueInterest): supabase/functions/accrueInterest/index.ts
+Deployed Functions on project smgovvcbpncfsujynzcq: accrueInterest
+You can inspect your deployment in the Dashboard: https://supabase.com/dashboard/project/smgovvcbpncfsujynzcq/functions
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+WARNING: Docker is not running
+Uploading asset (projection): supabase/functions/projection/index.ts
+Deployed Functions on project smgovvcbpncfsujynzcq: projection
+You can inspect your deployment in the Dashboard: https://supabase.com/dashboard/project/smgovvcbpncfsujynzcq/functions
+[?25l
+    Select a project:                                                                         
+                                                                                              
+  >  1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]  
+    2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                              
+                                                                                              
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                            
+                                                                                              [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K
+    Select a project:                                                                          
+                                                                                               
+    1. yfhzmwsosduptjicqhne [name: soloworks, org: mklmmiramlnvftlrhxlx, region: us-west-1]    
+  >  2. smgovvcbpncfsujynzcq [name: Bank_o_Bryan, org: mklmmiramlnvftlrhxlx, region: us-east-1]
+                                                                                               
+                                                                                               
+    ↑/k up • ↓/j down • / filter • q quit • ? more                                             
+                                                                                               [0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2K [0D[2K[?25h[?1002l[?1003l[?1006lSelected project: smgovvcbpncfsujynzcq
+WARNING: Docker is not running
+Uploading asset (projectionWithSim): supabase/functions/projectionWithSim/index.ts
+Deployed Functions on project smgovvcbpncfsujynzcq: projectionWithSim
+You can inspect your deployment in the Dashboard: https://supabase.com/dashboard/project/smgovvcbpncfsujynzcq/functions
+Verifying schema...
+2.33.9
+Pushing database migrations...
+Cannot find project ref. Have you run supabase link?
+Try rerunning the command with --debug to troubleshoot the error.
+2.33.9
+Pushing database migrations...
+Cannot find project ref. Have you run supabase link?
+Try rerunning the command with --debug to troubleshoot the error.
+Deploying edge functions...
+Invalid project ref format. Must be like `abcdefghijklmnopqrst`.
+Try rerunning the command with --debug to troubleshoot the error.
+Invalid project ref format. Must be like `abcdefghijklmnopqrst`.
+Try rerunning the command with --debug to troubleshoot the error.
+Invalid project ref format. Must be like `abcdefghijklmnopqrst`.
+Try rerunning the command with --debug to troubleshoot the error.
+Sourcing .env.local...
+Using project:
+Logging into Supabase CLI...
+Linking project...
+Invalid project ref format. Must be like `abcdefghijklmnopqrst`.
+Try rerunning the command with --debug to troubleshoot the error.
+Pushing database migrations...
+Cannot find project ref. Have you run supabase link?
+Try rerunning the command with --debug to troubleshoot the error.
+Deploying edge functions...
+Usage:
+  supabase functions deploy [Function name] [flags]
+
+Flags:
+  -h, --help                 help for deploy
+      --import-map string    Path to import map file.
+  -j, --jobs uint            Maximum number of parallel jobs. (default 1)
+      --no-verify-jwt        Disable JWT verification for the Function.
+      --project-ref string   Project ref of the Supabase project.
+      --prune                Delete Functions that exist in Supabase project but not locally.
+      --use-api              Use Management API to bundle functions.
+      --use-docker           Use Docker to bundle functions. (default true)
+
+Global Flags:
+      --create-ticket                                  create a support ticket for any CLI error
+      --debug                                          output debug logs to stderr
+      --dns-resolver [ native | https ]                lookup domain names using the specified resolver (default native)
+      --experimental                                   enable experimental features
+      --network-id string                              use the specified docker network instead of a generated one
+  -o, --output [ env | pretty | json | toml | yaml ]   output format of status variables (default pretty)
+      --workdir string                                 path to a Supabase project directory
+      --yes                                            answer yes to all prompts
+
+flag needs an argument: --project-ref
+Try rerunning the command with --debug to troubleshoot the error.
+Usage:
+  supabase functions deploy [Function name] [flags]
+
+Flags:
+  -h, --help                 help for deploy
+      --import-map string    Path to import map file.
+  -j, --jobs uint            Maximum number of parallel jobs. (default 1)
+      --no-verify-jwt        Disable JWT verification for the Function.
+      --project-ref string   Project ref of the Supabase project.
+      --prune                Delete Functions that exist in Supabase project but not locally.
+      --use-api              Use Management API to bundle functions.
+      --use-docker           Use Docker to bundle functions. (default true)
+
+Global Flags:
+      --create-ticket                                  create a support ticket for any CLI error
+      --debug                                          output debug logs to stderr
+      --dns-resolver [ native | https ]                lookup domain names using the specified resolver (default native)
+      --experimental                                   enable experimental features
+      --network-id string                              use the specified docker network instead of a generated one
+  -o, --output [ env | pretty | json | toml | yaml ]   output format of status variables (default pretty)
+      --workdir string                                 path to a Supabase project directory
+      --yes                                            answer yes to all prompts
+
+flag needs an argument: --project-ref
+Try rerunning the command with --debug to troubleshoot the error.
+Usage:
+  supabase functions deploy [Function name] [flags]
+
+Flags:
+  -h, --help                 help for deploy
+      --import-map string    Path to import map file.
+  -j, --jobs uint            Maximum number of parallel jobs. (default 1)
+      --no-verify-jwt        Disable JWT verification for the Function.
+      --project-ref string   Project ref of the Supabase project.
+      --prune                Delete Functions that exist in Supabase project but not locally.
+      --use-api              Use Management API to bundle functions.
+      --use-docker           Use Docker to bundle functions. (default true)
+
+Global Flags:
+      --create-ticket                                  create a support ticket for any CLI error
+      --debug                                          output debug logs to stderr
+      --dns-resolver [ native | https ]                lookup domain names using the specified resolver (default native)
+      --experimental                                   enable experimental features
+      --network-id string                              use the specified docker network instead of a generated one
+  -o, --output [ env | pretty | json | toml | yaml ]   output format of status variables (default pretty)
+      --workdir string                                 path to a Supabase project directory
+      --yes                                            answer yes to all prompts
+
+flag needs an argument: --project-ref
+Try rerunning the command with --debug to troubleshoot the error.
+Verifying schema...
+You are now logged in. Happy coding!
+Connecting to remote database...
+failed to connect to postgres: failed to connect to `host=aws-0-us-east-1.pooler.supabase.com user=postgres.smgovvcbpncfsujynzcq database=postgres`: failed SASL auth (invalid SCRAM server-final-message received from server)
+Try rerunning the command with --debug to troubleshoot the error.
+supabase link --project-ref smgovvcbpncfsujynzcq --password 7gWuwLP9D5KZWiRg failed with code 1
+You are now logged in. Happy coding!
+Connecting to remote database...
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+Finished supabase link.
+WARNING: Local config differs from linked project. Try updating supabase/config.toml
+diff supabase/config.toml smgovvcbpncfsujynzcq
+--- supabase/config.toml
++++ smgovvcbpncfsujynzcq
+@@ -13,7 +13,7 @@
+ [db]
+ port = 54322
+ shadow_port = 54320
+-major_version = 15
++major_version = 17
+ root_key = ""
+ [db.pooler]
+ enabled = false
+@@ -58,8 +58,8 @@
+ 
+ [auth]
+ enabled = true
+-site_url = "http://127.0.0.1:3000"
+-additional_redirect_urls = ["https://127.0.0.1:3000"]
++site_url = "http://localhost:3000"
++additional_redirect_urls = []
+ jwt_expiry = 3600
+ enable_refresh_token_rotation = true
+ refresh_token_reuse_interval = 10
+@@ -101,9 +101,9 @@
+ [auth.email]
+ enable_signup = true
+ double_confirm_changes = true
+-enable_confirmations = false
++enable_confirmations = true
+ secure_password_change = false
+-max_frequency = "1s"
++max_frequency = "1m0s"
+ otp_length = 6
+ otp_expiry = 3600
+ [auth.email.template]
+
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250807_prd_mvp.sql
+ • 20250808005336_ivory_jungle.sql
+ • 20250808005355_smooth_cherry.sql
+ • 20250808005419_shiny_shape.sql
+
+ [Y/n] Pushing migrations (non-interactive)...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250807_prd_mvp.sql
+ • 20250808005336_ivory_jungle.sql
+ • 20250808005355_smooth_cherry.sql
+ • 20250808005419_shiny_shape.sql
+
+ [Y/n] y
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+NOTICE (42P07): relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "statements" of relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "name" of relation "schema_migrations" already exists, skipping
+Applying migration 20250807_prd_mvp.sql...
+Applying migration 20250808005336_ivory_jungle.sql...
+NOTICE (42P07): relation "families" already exists, skipping
+NOTICE (42P07): relation "parents" already exists, skipping
+NOTICE (42P07): relation "children" already exists, skipping
+NOTICE (42P07): relation "accounts" already exists, skipping
+ERROR: column "last_interest_date" does not exist (SQLSTATE 42703)                        
+At statement: 8                                                                           
+CREATE INDEX IF NOT EXISTS idx_accounts_last_interest_date ON accounts(last_interest_date)
+Try rerunning the command with --debug to troubleshoot the error.
+Verifying schema...
+Re-running db push after guard fix...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250808005336_ivory_jungle.sql
+ • 20250808005355_smooth_cherry.sql
+ • 20250808005419_shiny_shape.sql
+
+ [Y/n] y
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+NOTICE (42P07): relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "statements" of relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "name" of relation "schema_migrations" already exists, skipping
+Applying migration 20250808005336_ivory_jungle.sql...
+NOTICE (42P07): relation "families" already exists, skipping
+NOTICE (42P07): relation "parents" already exists, skipping
+NOTICE (42P07): relation "children" already exists, skipping
+NOTICE (42P07): relation "accounts" already exists, skipping
+Applying migration 20250808005355_smooth_cherry.sql...
+ERROR: type "transaction_type" already exists (SQLSTATE 42710)                     
+At statement: 0                                                                    
+/*                                                                                 
+  # Bank o'Bryan Financial System                                                  
+                                                                                   
+  1. New Tables                                                                    
+    - `interest_tiers` - Configurable interest rate tiers based on balance ranges  
+      - `id` (uuid, primary key)                                                   
+      - `min_balance` (decimal) - Minimum balance for tier                         
+      - `max_balance` (decimal) - Maximum balance for tier (null for unlimited)    
+      - `annual_rate` (decimal) - Annual interest rate percentage                  
+      - `is_active` (boolean) - Whether tier is currently active                   
+                                                                                   
+    - `transactions` - All financial transactions (deposits, withdrawals, interest)
+      - `id` (uuid, primary key)                                                   
+      - `account_id` (uuid, foreign key to accounts)                               
+      - `type` (enum) - 'deposit', 'withdrawal', 'interest'                        
+      - `amount` (decimal) - Transaction amount                                    
+      - `description` (text) - Transaction description                             
+      - `parent_id` (uuid) - Which parent made the transaction                     
+      - `transaction_date` (date) - When transaction occurred                      
+      - `created_at` (timestamp)                                                   
+                                                                                   
+    - `interest_runs` - Tracking of daily interest calculation jobs                
+      - `id` (uuid, primary key)                                                   
+      - `run_date` (date) - Date interest was calculated for                       
+      - `accounts_processed` (integer) - Number of accounts processed              
+      - `total_interest_paid` (decimal) - Total interest distributed               
+      - `completed_at` (timestamp)                                                 
+                                                                                   
+  2. Security                                                                      
+    - Enable RLS on all tables with family-scoped access                           
+    - Create policies for safe transaction management                              
+                                                                                   
+  3. Functions                                                                     
+    - Interest calculation function using tiered rates                             
+    - Balance update functions with atomic operations                              
+*/                                                                                 
+                                                                                   
+-- Create transaction type enum                                                    
+CREATE TYPE transaction_type AS ENUM ('deposit', 'withdrawal', 'interest')         
+Try rerunning the command with --debug to troubleshoot the error.
+Re-running db push after enum guard...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250808005355_smooth_cherry.sql
+ • 20250808005419_shiny_shape.sql
+
+ [Y/n] y
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+NOTICE (42P07): relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "statements" of relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "name" of relation "schema_migrations" already exists, skipping
+Applying migration 20250808005355_smooth_cherry.sql...
+Applying migration 20250808005419_shiny_shape.sql...
+NOTICE (42P07): relation "goals" already exists, skipping
+NOTICE (42P07): relation "rewards" already exists, skipping
+NOTICE (42P07): relation "audit_log" already exists, skipping
+ERROR: column "reward_id" referenced in foreign key constraint does not exist (SQLSTATE 42703)
+At statement: 5                                                                               
+-- Add foreign key constraint for goals -> rewards                                            
+ALTER TABLE goals ADD CONSTRAINT fk_goals_reward_id                                           
+  FOREIGN KEY (reward_id) REFERENCES rewards(id) ON DELETE SET NULL                           
+Try rerunning the command with --debug to troubleshoot the error.
+Final db push...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250808005419_shiny_shape.sql
+
+ [Y/n] y
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+NOTICE (42P07): relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "statements" of relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "name" of relation "schema_migrations" already exists, skipping
+Applying migration 20250808005419_shiny_shape.sql...
+NOTICE (42P07): relation "goals" already exists, skipping
+NOTICE (42P07): relation "rewards" already exists, skipping
+NOTICE (42P07): relation "audit_log" already exists, skipping
+ERROR: syntax error at or near "NOT" (SQLSTATE 42601)
+At statement: 6                                      
+ALTER TABLE goals                                    
+  ADD CONSTRAINT IF NOT EXISTS fk_goals_reward_id    
+                    ^                                
+Try rerunning the command with --debug to troubleshoot the error.
+Final verify...
+Apply guarded FK + seed + PRD tiers...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250808005419_shiny_shape.sql
+
+ [Y/n] y
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+NOTICE (42P07): relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "statements" of relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "name" of relation "schema_migrations" already exists, skipping
+Applying migration 20250808005419_shiny_shape.sql...
+NOTICE (42P07): relation "goals" already exists, skipping
+NOTICE (42P07): relation "rewards" already exists, skipping
+NOTICE (42P07): relation "audit_log" already exists, skipping
+ERROR: column "is_completed" does not exist (SQLSTATE 42703)                      
+At statement: 8                                                                   
+CREATE INDEX IF NOT EXISTS idx_goals_completed ON goals(is_completed, target_date)
+Try rerunning the command with --debug to troubleshoot the error.
+Verify...
+Dropping *_prd tables to avoid drift...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250808005419_shiny_shape.sql
+ • 20250808090500_remove_prd_dupes.sql
+
+ [Y/n] y
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+NOTICE (42P07): relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "statements" of relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "name" of relation "schema_migrations" already exists, skipping
+Applying migration 20250808005419_shiny_shape.sql...
+NOTICE (42P07): relation "goals" already exists, skipping
+NOTICE (42P07): relation "rewards" already exists, skipping
+NOTICE (42P07): relation "audit_log" already exists, skipping
+ERROR: column "is_completed" does not exist (SQLSTATE 42703)                      
+At statement: 8                                                                   
+CREATE INDEX IF NOT EXISTS idx_goals_completed ON goals(is_completed, target_date)
+Try rerunning the command with --debug to troubleshoot the error.
+Verify after drop...
+Pushing guarded goals index...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250808005419_shiny_shape.sql
+ • 20250808090500_remove_prd_dupes.sql
+
+ [Y/n] y
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+NOTICE (42P07): relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "statements" of relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "name" of relation "schema_migrations" already exists, skipping
+Applying migration 20250808005419_shiny_shape.sql...
+NOTICE (42P07): relation "goals" already exists, skipping
+NOTICE (42P07): relation "rewards" already exists, skipping
+NOTICE (42P07): relation "audit_log" already exists, skipping
+ERROR: column "family_id" does not exist (SQLSTATE 42703)             
+At statement: 9                                                       
+CREATE INDEX IF NOT EXISTS idx_rewards_family_id ON rewards(family_id)
+Try rerunning the command with --debug to troubleshoot the error.
+Verifying schema...
+Verify PRD tables absence...
+Final attempt to apply pending migrations (guarded) and drop *_prd...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20250808005419_shiny_shape.sql
+ • 20250808090500_remove_prd_dupes.sql
+
+ [Y/n] y
+NOTICE (42P06): schema "supabase_migrations" already exists, skipping
+NOTICE (42P07): relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "statements" of relation "schema_migrations" already exists, skipping
+NOTICE (42701): column "name" of relation "schema_migrations" already exists, skipping
+Applying migration 20250808005419_shiny_shape.sql...
+NOTICE (42P07): relation "goals" already exists, skipping
+NOTICE (42P07): relation "rewards" already exists, skipping
+NOTICE (42P07): relation "audit_log" already exists, skipping
+ERROR: column "created_at" does not exist (SQLSTATE 42703)                       
+At statement: 12                                                                 
+CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC)
+Try rerunning the command with --debug to troubleshoot the error.

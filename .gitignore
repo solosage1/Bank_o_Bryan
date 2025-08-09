@@ -56,3 +56,4 @@ coverage/
 .node_repl_history
 # Generic environment variable files
 .env*
+supabase/config.toml

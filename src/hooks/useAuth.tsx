@@ -15,6 +15,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
+      // Helpful debug signal for single-click verification
+      // eslint-disable-next-line no-console
+      console.info('auth:signInWithGoogle invoked');
       await signInGoogle();
     } catch (error) {
       console.error('Sign in error:', error);
@@ -24,6 +27,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      // Ensure any local test bypass is cleared so real auth behavior is observed
+      if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.removeItem('E2E_BYPASS');
+        } catch (_) {
+          // noop
+        }
+      }
       await signOutAuth();
       setUser(null);
       setParent(null);
@@ -31,6 +42,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
+    }
+  };
+
+  const refreshProfile = async () => {
+    const isBypass =
+      process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
+      (typeof window !== 'undefined' && (
+        new URLSearchParams(window.location.search).get('e2e') === '1' ||
+        window.localStorage.getItem('E2E_BYPASS') === '1'
+      ));
+    if (isBypass) {
+      // Hydrate from localStorage in bypass mode
+      if (typeof window !== 'undefined') {
+        try {
+          const storedParent = window.localStorage.getItem('E2E_PARENT');
+          const storedFamily = window.localStorage.getItem('E2E_FAMILY');
+          setParent(storedParent ? JSON.parse(storedParent) : { id: 'p-e2e', name: 'E2E Parent' } as any);
+          setFamily(storedFamily ? JSON.parse(storedFamily) : { id: 'fam-e2e', name: 'E2E Family', timezone: 'America/New_York', sibling_visibility: true, created_at: '' } as any);
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn('bypass: failed to hydrate E2E_PARENT/E2E_FAMILY');
+        }
+      }
+      return;
+    }
+    if (!user) return;
+    try {
+      await fetchParentAndFamily(user.id);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error refreshing profile:', error);
     }
   };
 
@@ -43,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           families (*)
         `)
         .eq('auth_user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (parentError && parentError.code !== 'PGRST116') {
         throw parentError;
@@ -64,6 +106,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // E2E bypass: provide a fake authenticated user across all routes and hydrate parent/family from localStorage
+    const isBypass =
+      process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
+      (typeof window !== 'undefined' &&
+        (new URLSearchParams(window.location.search).get('e2e') === '1' ||
+         window.localStorage.getItem('E2E_BYPASS') === '1'));
+
+    if (isBypass) {
+      setUser({ id: 'e2e-user' } as unknown as User);
+      if (typeof window !== 'undefined') {
+        try {
+          const storedParent = window.localStorage.getItem('E2E_PARENT');
+          const storedFamily = window.localStorage.getItem('E2E_FAMILY');
+          setParent(storedParent ? JSON.parse(storedParent) : { id: 'p-e2e', name: 'E2E Parent' } as any);
+          setFamily(storedFamily ? JSON.parse(storedFamily) : { id: 'fam-e2e', name: 'E2E Family', timezone: 'America/New_York', sibling_visibility: true, created_at: '' } as any);
+          const onStorage = (ev: StorageEvent) => {
+            if (ev.key === 'E2E_PARENT' || ev.key === 'E2E_FAMILY') {
+              const p = window.localStorage.getItem('E2E_PARENT');
+              const f = window.localStorage.getItem('E2E_FAMILY');
+              setParent(p ? JSON.parse(p) : { id: 'p-e2e', name: 'E2E Parent' } as any);
+              setFamily(f ? JSON.parse(f) : { id: 'fam-e2e', name: 'E2E Family', timezone: 'America/New_York', sibling_visibility: true, created_at: '' } as any);
+            }
+          };
+          window.addEventListener('storage', onStorage);
+          return () => window.removeEventListener('storage', onStorage);
+        } catch (_) {}
+      }
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -108,7 +181,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     family,
     loading,
     signInWithGoogle,
-    signOut
+    signOut,
+    refreshProfile
   };
 
   return (

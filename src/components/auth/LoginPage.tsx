@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/ui/icons';
 import { Banknote, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface LoginPageProps {
   onSignIn: () => Promise<void>;
@@ -17,9 +18,14 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
   const handleSignIn = async () => {
     try {
       setIsLoading(true);
+      console.info('login:clicked');
       await onSignIn();
     } catch (error) {
       console.error('Sign in error:', error);
+      toast({
+        title: 'Unable to start Google sign-in',
+        description: 'Please try again in a moment. If the problem persists, contact support.',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +64,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
           className="max-w-6xl mx-auto"
         >
           {/* Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
@@ -68,7 +74,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
               <Banknote className="w-10 h-10 text-white" />
             </motion.div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-              Bank o'Bryan
+              Bank o&apos;Bryan
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               A playful virtual family bank designed for kids aged 10-14. 
@@ -78,9 +84,9 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Features */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                Why Choose Bank o'Bryan?
+                Why Choose Bank o&apos;Bryan?
               </h2>
               
               <div className="grid gap-6">
@@ -92,8 +98,8 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
                     <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex items-start space-x-4">
+                      <CardContent className="p-5">
+                        <div className="flex items-center space-x-4">
                           <div className="flex-shrink-0">
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                               <feature.icon className="w-6 h-6 text-white" />
@@ -132,10 +138,12 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
                 </CardHeader>
                 <CardContent className="px-8 pb-8">
                   <Button
+                    type="button"
                     onClick={handleSignIn}
                     disabled={isLoading}
                     size="lg"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    variant="google"
+                    className="w-full rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   >
                     {isLoading ? (
                       <div className="flex items-center space-x-2">
@@ -144,7 +152,7 @@ export function LoginPage({ onSignIn }: LoginPageProps) {
                       </div>
                     ) : (
                       <div className="flex items-center space-x-3">
-                        <Icons.google className="w-5 h-5" />
+                        <Icons.googleGlyph className="w-5 h-5" />
                         <span>Continue with Google</span>
                       </div>
                     )}

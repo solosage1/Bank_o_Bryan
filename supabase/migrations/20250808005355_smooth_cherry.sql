@@ -35,8 +35,9 @@
     - Balance update functions with atomic operations
 */
 
--- Create transaction type enum
-CREATE TYPE transaction_type AS ENUM ('deposit', 'withdrawal', 'interest');
+DO $$ BEGIN
+  CREATE TYPE transaction_type AS ENUM ('deposit', 'withdrawal', 'interest');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Create financial tables
 CREATE TABLE IF NOT EXISTS interest_tiers (
