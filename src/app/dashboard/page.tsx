@@ -7,6 +7,9 @@ import { Plus, Settings, LogOut, Users, DollarSign } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { BalanceTicker } from '@/components/banking/BalanceTicker';
 import { TransactionModal } from '@/components/banking/TransactionModal';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,6 +29,9 @@ export default function DashboardPage() {
     accountId: string;
     type: 'deposit' | 'withdrawal';
   } | null>(null);
+  const [isAddChildOpen, setIsAddChildOpen] = useState<boolean>(false);
+  const [newChild, setNewChild] = useState<{ name: string; age?: string; nickname?: string }>({ name: '', age: '', nickname: '' });
+  const [isCreatingChild, setIsCreatingChild] = useState<boolean>(false);
 
   // Fetch children and their accounts
   const fetchChildren = useCallback(async () => {
@@ -112,6 +118,63 @@ export default function DashboardPage() {
     fetchChildren(); // Refresh data
   };
 
+  const openAddChild = () => {
+    setNewChild({ name: '', age: '', nickname: '' });
+    setIsAddChildOpen(true);
+  };
+
+  const createChildAndAccount = async () => {
+    if (!family) return;
+    if (!newChild.name.trim()) return;
+    try {
+      setIsCreatingChild(true);
+      track('child_added', { phase: 'attempt', source: 'dashboard', has_age: Boolean(newChild.age), has_nickname: Boolean(newChild.nickname) });
+
+      const { data: childRow, error: childErr } = await supabase
+        .from('children')
+        .insert({
+          family_id: family.id,
+          name: newChild.name.trim(),
+          age: newChild.age ? Number(newChild.age) : null,
+          nickname: newChild.nickname?.trim() || null,
+        })
+        .select('id, name')
+        .single();
+
+      if (childErr) throw childErr;
+
+      if (childRow?.id) {
+        const { error: acctErr } = await supabase
+          .from('accounts')
+          .insert({ child_id: childRow.id, balance: 0, total_earned: 0 });
+        if (acctErr) throw acctErr;
+
+        // Audit (best-effort)
+        try {
+          await supabase.rpc('log_audit_event', {
+            p_family_id: family.id,
+            p_user_type: 'parent',
+            p_user_id: parent?.id ?? '',
+            p_action: 'Created child',
+            p_entity_type: 'child',
+            p_entity_id: childRow.id,
+            p_metadata: { name: childRow.name },
+          });
+        } catch (_) { /* noop */ }
+
+        track('child_added', { phase: 'success', child_id: childRow.id });
+      }
+
+      setIsAddChildOpen(false);
+      await fetchChildren();
+    } catch (error) {
+      console.error('Error creating child:', error);
+      track('child_added', { phase: 'error', message: error instanceof Error ? error.message : String(error) });
+    } finally {
+      setIsCreatingChild(false);
+    }
+  };
+
   if (authLoading || isFetching) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
@@ -177,7 +240,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/settings')}>
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </Button>
@@ -244,7 +307,7 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Children&apos;s Accounts</h2>
-            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={openAddChild}>
               <Plus className="w-4 h-4 mr-2" />
               Add Child
             </Button>
@@ -262,7 +325,7 @@ export default function DashboardPage() {
                 <p className="text-gray-600 mb-6">
                   Add your first child to start their banking journey!
                 </p>
-                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" onClick={openAddChild}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Your First Child
                 </Button>
@@ -364,6 +427,65 @@ export default function DashboardPage() {
           onSuccess={handleTransactionSuccess}
         />
       )}
+
+      {/* Add Child Modal */}
+      <Dialog open={isAddChildOpen} onOpenChange={setIsAddChildOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Child</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                placeholder="e.g., Avery"
+                value={newChild.name}
+                onChange={(e) => setNewChild((s) => ({ ...s, name: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="age">Age (optional)</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  min={0}
+                  max={21}
+                  placeholder="12"
+                  value={newChild.age}
+                  onChange={(e) => setNewChild((s) => ({ ...s, age: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nickname">Nickname (optional)</Label>
+                <Input
+                  id="nickname"
+                  placeholder="Ave"
+                  value={newChild.nickname}
+                  onChange={(e) => setNewChild((s) => ({ ...s, nickname: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button variant="outline" onClick={() => setIsAddChildOpen(false)} disabled={isCreatingChild}>Cancel</Button>
+              <Button onClick={createChildAndAccount} disabled={isCreatingChild || !newChild.name.trim()}>
+                {isCreatingChild ? (
+                  <span className="flex items-center space-x-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Creating...</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Child
+                  </span>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

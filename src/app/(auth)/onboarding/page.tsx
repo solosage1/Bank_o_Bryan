@@ -23,6 +23,7 @@ import { track } from '@/components/analytics/track';
 const familySchema = z.object({
   familyName: z.string().min(1, 'Family name is required').max(50, 'Family name too long'),
   timezone: z.string().min(1, 'Timezone is required'),
+  siblingVisibility: z.boolean().optional(),
 });
 
 type FamilyFormData = z.infer<typeof familySchema>;
@@ -50,12 +51,13 @@ export default function OnboardingPage() {
     defaultValues: {
       familyName: '',
       timezone: 'America/New_York',
+      siblingVisibility: true,
     },
   });
 
   // Ensure no stray autofill or stale state on mount
   useEffect(() => {
-    form.reset({ familyName: '', timezone: 'America/New_York' });
+    form.reset({ familyName: '', timezone: 'America/New_York', siblingVisibility: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -91,6 +93,17 @@ export default function OnboardingPage() {
       if (rpcError) throw rpcError as any;
       if (!familyId) throw new Error('onboard_family returned no family id');
 
+      // Persist sibling visibility preference immediately after onboarding
+      try {
+        const { error: updateError } = await supabase
+          .from('families')
+          .update({ sibling_visibility: data.siblingVisibility ?? true })
+          .eq('id', familyId as string);
+        if (updateError) throw updateError;
+      } catch (updateErr) {
+        console.warn('Failed to update sibling visibility (non-blocking):', updateErr);
+      }
+
       // Log audit event (non-blocking)
       (async () => {
         try {
@@ -101,7 +114,7 @@ export default function OnboardingPage() {
             p_action: `Created family \"${data.familyName}\"`,
             p_entity_type: 'family',
             p_entity_id: familyId as any,
-            p_metadata: { timezone: data.timezone }
+            p_metadata: { timezone: data.timezone, sibling_visibility: data.siblingVisibility ?? true }
           });
         } catch (rpcError: unknown) {
           console.warn('Audit log RPC failed (non-blocking):', rpcError);
@@ -255,7 +268,26 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              {/* Sibling visibility is always on by policy; control removed for simplicity. */}
+              <div>
+                <Label htmlFor="siblingVisibility" className="text-base font-medium text-gray-900">
+                  Sibling Visibility
+                </Label>
+                <div className="mt-2 flex items-center justify-between rounded-lg border border-gray-200 p-4">
+                  <div>
+                    <p className="text-gray-900 font-medium">Allow siblings to view each other’s balances</p>
+                    <p className="text-sm text-gray-500">You can change this later in family settings.</p>
+                  </div>
+                  <Switch
+                    id="siblingVisibility"
+                    checked={form.watch('siblingVisibility')}
+                    onCheckedChange={(v) => form.setValue('siblingVisibility', v)}
+                    aria-describedby="siblingVisibility-help"
+                  />
+                </div>
+                <span id="siblingVisibility-help" className="sr-only">
+                  Toggle whether children can see each other’s accounts
+                </span>
+              </div>
 
               {form.formState.errors.root && (
                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
