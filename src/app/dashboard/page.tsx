@@ -145,10 +145,10 @@ export default function DashboardPage() {
       setCreateChildError(null);
       track('child_added', { phase: 'attempt', source: 'dashboard', has_age: Boolean(newChild.age), has_nickname: Boolean(newChild.nickname) });
 
-      // Build payload; in bypass without family, omit family_id to allow intercepted REST to accept
+      // Build payload; only include columns that exist in PRD schema
+      // (children table has: id, family_id, name, nickname, avatar, theme_color, created_at)
       const payload: any = {
         name: newChild.name.trim(),
-        age: newChild.age ? Number(newChild.age) : null,
         nickname: newChild.nickname?.trim() || null,
       };
       if (family) {
