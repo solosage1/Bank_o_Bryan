@@ -163,30 +163,36 @@ export type Database = {
       interest_tiers: {
         Row: {
           id: string
-          min_balance: number
-          max_balance: number | null
-          annual_rate: number
-          is_active: boolean
+          family_id: string
+          child_id: string | null
+          lower_bound_cents: number
+          upper_bound_cents: number | null
+          apr_bps: number
+          effective_from: string
+          effective_to: string | null
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
-          min_balance?: number
-          max_balance?: number | null
-          annual_rate: number
-          is_active?: boolean
+          family_id: string
+          child_id?: string | null
+          lower_bound_cents: number
+          upper_bound_cents?: number | null
+          apr_bps: number
+          effective_from: string
+          effective_to?: string | null
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
-          min_balance?: number
-          max_balance?: number | null
-          annual_rate?: number
-          is_active?: boolean
+          family_id?: string
+          child_id?: string | null
+          lower_bound_cents?: number
+          upper_bound_cents?: number | null
+          apr_bps?: number
+          effective_from?: string
+          effective_to?: string | null
           created_at?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -479,6 +485,31 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: string
+      }
+      replace_interest_tier_set: {
+        Args: {
+          p_family_id: string
+          p_effective_from: string
+          p_rows: Json
+        }
+        Returns: {
+          id: string
+          family_id: string
+          child_id: string | null
+          lower_bound_cents: number
+          upper_bound_cents: number | null
+          apr_bps: number
+          effective_from: string
+          effective_to: string | null
+          created_at: string
+        }[]
+      }
+      delete_interest_tier_set: {
+        Args: {
+          p_family_id: string
+          p_effective_from: string
+        }
+        Returns: number
       }
     }
     Enums: {

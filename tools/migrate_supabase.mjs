@@ -6,7 +6,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
-const envPath = path.join(repoRoot, '.env.local')
+const envPathPrimary = path.join(repoRoot, '.env')
+const envPathFallback = path.join(repoRoot, '.env.local')
 
 function parseEnv(filePath) {
   const raw = fs.readFileSync(filePath, 'utf8')
@@ -45,10 +46,13 @@ function deriveProjectRef(url) {
 }
 
 async function main() {
-  if (!fs.existsSync(envPath)) {
-    throw new Error(`.env.local not found at ${envPath}`)
+  const chosenEnvPath = fs.existsSync(envPathPrimary)
+    ? envPathPrimary
+    : (fs.existsSync(envPathFallback) ? envPathFallback : '')
+  if (!chosenEnvPath) {
+    throw new Error(`No .env or .env.local found at repo root (${repoRoot})`)
   }
-  const env = parseEnv(envPath)
+  const env = parseEnv(chosenEnvPath)
   const url = env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL || ''
   const token = env.SUPABASE_ACCESS_TOKEN || env.SUPABASE_TOKEN || ''
   const dbpass = env.SUPABASE_DB_PASSWORD || env.DB_PASSWORD || env.POSTGRES_PASSWORD || ''

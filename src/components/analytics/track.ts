@@ -1,5 +1,7 @@
 type EventName =
   | 'family_created' | 'child_added' | 'deposit_created' | 'withdrawal_created' | 'tiers_updated'
+  | 'settings_family_updated' | 'settings_timezone_updated' | 'settings_sibling_visibility_updated'
+  | 'tiers_created' | 'tiers_deleted'
   | 'projection_viewed' | 'playground_opened' | 'playground_sim_run' | 'playground_preset_used' | 'playground_convert_clicked'
   | 'goal_created' | 'reward_marked';
 

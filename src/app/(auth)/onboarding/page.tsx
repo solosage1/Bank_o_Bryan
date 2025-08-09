@@ -62,7 +62,8 @@ export default function OnboardingPage() {
   }, []);
 
   const onSubmit = async (data: FamilyFormData) => {
-    const isBypass = process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' || (user && user.id === 'e2e-user');
+    const isBypass = process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' || (user && user.id === 'e2e-user') ||
+      (typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('e2e') === '1' || window.localStorage.getItem('E2E_BYPASS') === '1'));
 
     try {
       setIsLoading(true);
@@ -70,8 +71,27 @@ export default function OnboardingPage() {
 
       // E2E bypass: simulate successful onboarding without backend
       if (isBypass) {
-        await new Promise((r) => setTimeout(r, 100));
-        router.push('/dashboard');
+        try {
+          // Persist E2E_FAMILY so the auth context can hydrate family on next render
+          if (typeof window !== 'undefined') {
+            const payload = {
+              id: 'fam-e2e',
+              name: data.familyName,
+              timezone: data.timezone,
+              sibling_visibility: data.siblingVisibility ?? true,
+              created_at: ''
+            };
+            window.localStorage.setItem('E2E_FAMILY', JSON.stringify(payload));
+            // Ensure a parent exists in bypass
+            if (!window.localStorage.getItem('E2E_PARENT')) {
+              window.localStorage.setItem('E2E_PARENT', JSON.stringify({ id: 'p-e2e', name: 'E2E Parent' }));
+            }
+          }
+          await refreshProfile();
+        } finally {
+          await new Promise((r) => setTimeout(r, 50));
+          router.push('/dashboard');
+        }
         return;
       }
 
@@ -143,12 +163,8 @@ export default function OnboardingPage() {
 
   if (status === 'loading') {
     // In E2E bypass, skip the loading gate to render the form
-    if (
-      process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
-      (typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('e2e') === '1' || window.localStorage.getItem('E2E_BYPASS') === '1'))
-    ) {
-      // fallthrough to render form
-    } else {
+    const isBypass = process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' || (typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('e2e') === '1' || window.localStorage.getItem('E2E_BYPASS') === '1'));
+    if (!isBypass) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
         <div className="text-center">
