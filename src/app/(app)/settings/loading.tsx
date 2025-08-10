@@ -1,9 +1,4 @@
-import dynamic from 'next/dynamic';
-import React, { Suspense } from 'react';
-
-const SettingsClient = dynamic(() => import('./SettingsClient'), { suspense: true });
-
-function SettingsSkeleton() {
+export default function Loading() {
   return (
     <main role="main" className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
       <div className="text-center">
@@ -14,11 +9,4 @@ function SettingsSkeleton() {
   );
 }
 
-export default async function SettingsPage() {
-  return (
-    <Suspense fallback={<SettingsSkeleton />}> 
-      <SettingsClient />
-    </Suspense>
-  );
-}
 

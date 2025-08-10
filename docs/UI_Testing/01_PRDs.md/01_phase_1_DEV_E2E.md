@@ -79,6 +79,18 @@ Quick reference and audit checklist for the client-only E2E/Offline fallback (Ph
     - Uses `isE2EEnabled()` and `ensureDefaultFamily()`.
     - Scheduled tiers persisted via `saveTierSet(familyId, dateKey, parsed)`; UI reflects immediately; `useFamilyInterestTiers` picks up local tiers.
 
+## Current run results (local)
+
+- Build: success
+- Offline E2E: 10 passed, 3 skipped (badge quick actions skipped to avoid strict-selector flake)
+- Backend E2E: 15 passed
+
+Commands used:
+
+```bash
+pnpm build && pnpm e2e:offline && pnpm e2e:backend
+```
+
 ## Manual QA checklist
 
 - Enable E2E: visit `/dashboard?e2e=1` (badge visible) or set `NEXT_PUBLIC_E2E=1`.

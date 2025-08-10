@@ -43,9 +43,13 @@
 
 ### Strategic Initiative I1 — Robust E2E/offline fallback
 
-- Status: In progress (approved scope; implementation queued)
+- Status: In progress
 - Goal: Eliminate indefinite spinners and make all core flows fully testable without Supabase by adding timeboxed RPCs and deterministic local storage fallbacks gated by `?e2e=1`/`E2E_BYPASS`.
 - What changes: Shared timeout wrapper; local simulators for family/children/accounts/transactions/tiers; guards resolve immediately in E2E; visible E2E badge; guaranteed success/error states with toasts.
+- Initial work landed (see `docs/UI_Testing/01_PRDs.md/03_robust_e2e_offline_fallback.md` Implementation status):
+  - Wrapped remaining Supabase calls with `supabaseWithTimeout(..., 6000)` in dashboard, TransactionModal, Settings, onboarding, and tiers hook.
+  - Ensured E2E local writes dispatch `e2e-localstorage-updated`; tightened dashboard slow-load surfacing (~8s).
+  - Timeboxed child/account creation and audit RPCs; rebased BalanceTicker polling to skip in E2E.
 
 Projected impact on test plan (expected after I1 ships):
 
@@ -87,6 +91,53 @@ Projected impact on test plan (expected after I1 ships):
 
 Verification notes:
 - Validate by running `/dashboard?e2e=1` and exercising Dashboard, Child, Settings, and Transactions flows without Supabase; confirm no infinite spinners and presence of success/failure toasts.
+
+### Progress since last review
+
+- I2 shipped: E2E badge quick actions (`Disable E2E`, `Disable & Clear`) and test tagging/filters are live. See `docs/UI_Testing/01_PRDs.md/02_disable_e2e_and_tags.md`.
+- New test: `tests/e2e/e2e_badge_disable.spec.ts` (`@offline`) verifies disabling E2E and clearing local data.
+- I1 implementation underway per `03_robust_e2e_offline_fallback.md`; statuses in the table above are expected outcomes once I1 completes; current observed PASS/FAIL remains as originally recorded until I1 lands fully.
+
+### Strategic Initiative I2 — Disable E2E quick action and test tagging
+
+- Status: Shipped
+- What shipped:
+  - Badge quick actions in `src/app/_components/E2EBadge.tsx` to disable E2E and optionally clear local data; client-guarded, accessible, with toasts and safe navigation.
+  - Helper APIs in `src/lib/e2e.ts`: `disableE2E`, `clearE2ELocalData`, `disableE2EAndClear`.
+  - Playwright tags and filters: offline config `grep: /@offline/`; backend config `grepInvert: /@offline/`. Specs tagged accordingly; new `tests/e2e/e2e_badge_disable.spec.ts` covers the badge.
+- Impact on this plan:
+  - Improves manual QA velocity (fast exit from E2E and clean resets) and CI signal (clear partitioning of offline vs backend suites).
+  - Does not change functional pass/fail of feature flows by itself; relies on I1 for offline determinism.
+
+### Strategic Initiative I3 — App Shell and Route Stability (fix blank Settings and navigation)
+
+- Status: Planned
+- Goal: Eliminate blank renders and hydration gaps by stabilizing Next.js layouts, server/client boundaries, and Suspense/error boundaries across `dashboard`, `settings`, and `child/[id]` routes.
+- What changes:
+  - Ensure `Providers` only mount in client space; move side-effectful hooks to client components.
+  - Convert pages to server components that pass props to client islands; add `loading.tsx` and `error.tsx` per route.
+  - Remove accidental `window`/`localStorage` access in server trees; guard via `typeof window !== 'undefined'`.
+  - Fix settings route navigation (ensure segment and layout composition are correct) and add smoke tests.
+- Expected impact:
+  - C1 Settings navigation → PASSED (page renders reliably instead of blank).
+  - F1–F3 Settings flows become reachable (functional outcome still depends on I1 for offline).
+  - E1–E5 child detail loading becomes deterministic (no blank/indefinite states; proper error/loading UIs).
+
+### Strategic Initiative I4 — Data Fetching Reliability Layer (timeouts, cancellation, retry, cache)
+
+- Status: Planned
+- Goal: Remove indefinite spinners and make Retry/Reset deterministic by standardizing data access on TanStack Query with request timeouts, abortable queries on route change, unified error/toast handling, and cache invalidation on sign-out.
+- What changes:
+  - Add `QueryClientProvider` in `src/app/_components/Providers.tsx` with tuned defaults (retry/backoff, staleTime, gcTime).
+  - Implement a typed `supabaseQueryFn` that wraps `supabaseWithTimeout` and categorizes errors (timeout, 4xx, 5xx, offline) for consistent UI.
+  - Add abortable queries via `AbortController`; cancel on route transition/unmount.
+  - Unify feature hooks: `useFamily`, `useChildren`, `useChild`, `useAccount`, `useTransactions`, `useTiers` backed by React Query; expose `refetch` and status for UI.
+  - On sign-out/reset: invalidate all queries and clear caches to avoid stale UI.
+- Expected impact on this plan:
+  - H1 Loading states and retries → PASSED (deterministic retry and error surfaces).
+  - I4 Slow/retry flows → PASSED (standard timeout/cancellation/backoff, effective Retry button).
+  - C1/E1 Route reliability improves via removal of hanging fetches; pairs with I3 for full PASS.
+  - A4 Sign‑out behaves predictably (queries invalidated, UI resets).
 
 ### A1: Sign‑in landing page (/)
 

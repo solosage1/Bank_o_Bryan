@@ -21,6 +21,7 @@ import { supabase } from '@/lib/supabase';
 import { track } from '@/components/analytics/track';
 import { Toaster } from '@/components/ui/toaster';
 import { getBrowserTimeZone, TIMEZONES } from '@/lib/time';
+import { supabaseWithTimeout, dispatchLocalStorageUpdated } from '@/lib/e2e';
 
 const MotionDiv = dynamic(async () => {
   const m = await import('framer-motion');
@@ -86,6 +87,7 @@ export default function OnboardingPage() {
             if (!window.localStorage.getItem('E2E_PARENT')) {
               window.localStorage.setItem('E2E_PARENT', JSON.stringify({ id: 'p-e2e', name: 'E2E Parent' }));
             }
+            try { dispatchLocalStorageUpdated(); } catch {}
           }
           await refreshProfile();
         } finally {
@@ -99,26 +101,35 @@ export default function OnboardingPage() {
 
       // Ensure an active session exists before hitting authenticated RPCs
       // This defensively avoids races where the access token isn't yet ready after OAuth redirect
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData } = await supabaseWithTimeout(
+        async () => supabase.auth.getSession(),
+        6000
+      );
       if (!sessionData?.session) {
         throw new Error('No authenticated session available for onboarding');
       }
 
       // Use idempotent onboarding RPC to create or fetch family
-      const { data: familyId, error: rpcError } = await supabase.rpc('onboard_family', {
-        p_name: data.familyName,
-        p_timezone: data.timezone,
-      });
+      const { data: familyId, error: rpcError } = await supabaseWithTimeout(
+        async () => supabase.rpc('onboard_family', {
+          p_name: data.familyName,
+          p_timezone: data.timezone,
+        }),
+        6000
+      );
 
       if (rpcError) throw rpcError as any;
       if (!familyId) throw new Error('onboard_family returned no family id');
 
       // Persist sibling visibility preference immediately after onboarding
       try {
-        const { error: updateError } = await supabase
-          .from('families')
-          .update({ sibling_visibility: data.siblingVisibility ?? true })
-          .eq('id', familyId as string);
+        const { error: updateError } = await supabaseWithTimeout(
+          async () => supabase
+            .from('families')
+            .update({ sibling_visibility: data.siblingVisibility ?? true })
+            .eq('id', familyId as string),
+          6000
+        );
         if (updateError) throw updateError;
       } catch (updateErr) {
         console.warn('Failed to update sibling visibility (non-blocking):', updateErr);
@@ -127,15 +138,18 @@ export default function OnboardingPage() {
       // Log audit event (non-blocking)
       (async () => {
         try {
-          await supabase.rpc('log_audit_event', {
-            p_family_id: familyId as any,
-            p_user_type: 'parent',
-            p_user_id: user.id,
-            p_action: `Created family \"${data.familyName}\"`,
-            p_entity_type: 'family',
-            p_entity_id: familyId as any,
-            p_metadata: { timezone: data.timezone, sibling_visibility: data.siblingVisibility ?? true }
-          });
+          await supabaseWithTimeout(
+            async () => supabase.rpc('log_audit_event', {
+              p_family_id: familyId as any,
+              p_user_type: 'parent',
+              p_user_id: user.id,
+              p_action: `Created family \"${data.familyName}\"`,
+              p_entity_type: 'family',
+              p_entity_id: familyId as any,
+              p_metadata: { timezone: data.timezone, sibling_visibility: data.siblingVisibility ?? true }
+            }),
+            6000
+          );
         } catch (rpcError: unknown) {
           console.warn('Audit log RPC failed (non-blocking):', rpcError);
         }

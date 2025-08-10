@@ -21,8 +21,10 @@ Add a small UX affordance in the existing E2E badge to quickly turn off E2E mode
 ### UX Behavior
 - Location: inside the existing `E2E mode` badge (small pill).
 - Controls:
-  - Button “Disable E2E” (primary/default).
-  - Secondary action “Disable & Clear local data”. This can be a small inline button or a simple dropdown; keep minimal.
+  - Button “Disable E2E options” opens a small menu.
+  - Menu actions:
+    - “Disable E2E” (primary)
+    - “Disable and clear local data” (secondary)
 - Accessibility:
   - Badge retains `aria-label="E2E mode"`.
   - Buttons have accessible labels and focus states.
@@ -70,7 +72,7 @@ Add a small UX affordance in the existing E2E badge to quickly turn off E2E mode
 ### Acceptance Criteria
 - Badge quick action
   - Clicking “Disable E2E” removes `E2E_BYPASS`, strips `?e2e=1`, navigates to the same route without the param, and shows a toast. E2E banner disappears.
-  - Clicking “Disable & Clear local data” additionally clears all `E2E_*` keys, dispatches `e2e-localstorage-updated`, navigates as above, and shows a toast.
+  - Clicking “Disable and clear local data” additionally clears all `E2E_*` keys, dispatches `e2e-localstorage-updated`, navigates as above, and shows a toast.
   - Works on Dashboard, Child detail, and Settings without console errors or hydration warnings.
 - Test tagging and config
   - Offline run executes only `@offline` tests when `grep` is set; otherwise current behavior remains stable.

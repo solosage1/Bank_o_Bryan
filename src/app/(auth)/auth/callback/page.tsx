@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -11,6 +11,11 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const completeSignIn = async (): Promise<void> => {
       try {
+        // Fast-fail if Supabase configuration is missing in production to avoid hanging UI
+        if (!isSupabaseConfigured) {
+          setErrorMessage('Auth backend is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+          return;
+        }
         // If session already exists (e.g., Supabase auto-detected from URL hash), leave immediately
         const { data: initial } = await supabase.auth.getSession();
         if (initial.session) {
@@ -19,6 +24,14 @@ export default function AuthCallbackPage() {
             window.history.replaceState({}, document.title, window.location.pathname);
           }
           router.replace('/dashboard');
+          // Hard fallback in case client router is not ready on static hosting
+          setTimeout(() => {
+            try {
+              if (typeof window !== 'undefined' && window.location.pathname !== '/dashboard') {
+                window.location.assign('/dashboard');
+              }
+            } catch {}
+          }, 250);
           return;
         }
 
@@ -31,7 +44,10 @@ export default function AuthCallbackPage() {
 
         const code = searchParams.get('code');
         if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          // Prevent indefinite hang by racing a timeout against the exchange call
+          const exchange = supabase.auth.exchangeCodeForSession(code);
+          const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Code exchange timed out')), 8000));
+          const { error } = await Promise.race([exchange, timeout]) as Awaited<ReturnType<typeof supabase.auth.exchangeCodeForSession>>;
           if (error) {
             setErrorMessage(error.message);
             return;
@@ -40,6 +56,13 @@ export default function AuthCallbackPage() {
             window.history.replaceState({}, document.title, window.location.pathname);
           }
           router.replace('/dashboard');
+          setTimeout(() => {
+            try {
+              if (typeof window !== 'undefined' && window.location.pathname !== '/dashboard') {
+                window.location.assign('/dashboard');
+              }
+            } catch {}
+          }, 250);
           return;
         }
 
@@ -59,6 +82,13 @@ export default function AuthCallbackPage() {
               window.history.replaceState({}, document.title, window.location.pathname);
             }
             router.replace('/dashboard');
+            setTimeout(() => {
+              try {
+                if (typeof window !== 'undefined' && window.location.pathname !== '/dashboard') {
+                  window.location.assign('/dashboard');
+                }
+              } catch {}
+            }, 250);
             return;
           }
         }
@@ -71,6 +101,13 @@ export default function AuthCallbackPage() {
               window.history.replaceState({}, document.title, window.location.pathname);
             }
             router.replace('/dashboard');
+            setTimeout(() => {
+              try {
+                if (typeof window !== 'undefined' && window.location.pathname !== '/dashboard') {
+                  window.location.assign('/dashboard');
+                }
+              } catch {}
+            }, 250);
           } else {
             setErrorMessage('Authentication timed out. Please try signing in again.');
           }

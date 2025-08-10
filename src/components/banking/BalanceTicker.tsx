@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useAccountBalance } from '@/hooks/useRealtime';
 import { computeTickerValue, TickerBase } from '@/lib/interest/ticker';
 import { supabase } from '@/lib/supabase';
+import { isE2EEnabled, supabaseWithTimeout } from '@/lib/e2e';
 
 interface BalanceTickerProps {
   accountId: string;
@@ -81,15 +82,19 @@ export function BalanceTicker({
     return () => clearInterval(id);
   }, [tickerBase, reducedMotion, tiers, isBypass]);
 
-  // Periodic rebase from server authority
+  // Periodic rebase from server authority (skip in E2E)
   useEffect(() => {
     if (!accountId) return;
+    if (isE2EEnabled()) return;
     const id = setInterval(async () => {
-      const { data } = await supabase
-        .from('accounts')
-        .select('balance, updated_at')
-        .eq('id', accountId)
-        .maybeSingle();
+      const { data } = await supabaseWithTimeout(
+        async () => supabase
+          .from('accounts')
+          .select('balance, updated_at')
+          .eq('id', accountId)
+          .maybeSingle(),
+        6000
+      );
       if (data?.balance != null) {
         setTickerBase({
           base_value_cents: Math.round(data.balance * 100),

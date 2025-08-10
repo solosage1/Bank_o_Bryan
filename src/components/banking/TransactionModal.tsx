@@ -148,22 +148,24 @@ export function TransactionModal({
         }
       }
 
-      // Log audit event
+      // Log audit event (best-effort, timeboxed)
       if (parent.family_id) {
-        await supabase.rpc('log_audit_event', {
-          p_family_id: parent.family_id,
-          p_user_type: 'parent',
-          p_user_id: parent.id,
-          p_action: `${type === 'deposit' ? 'Deposited' : 'Withdrew'} $${data.amount} ${type === 'deposit' ? 'to' : 'from'} ${childName}'s account`,
-          p_entity_type: 'transaction',
-          p_entity_id: accountId,
-          p_metadata: {
-            amount: parseFloat(data.amount),
-            description: data.description,
-            child_id: childId,
-            transaction_date: format(data.transactionDate, 'yyyy-MM-dd')
-          }
-        });
+        try {
+          await supabaseWithTimeout(async () => supabase.rpc('log_audit_event', {
+            p_family_id: parent.family_id as string,
+            p_user_type: 'parent',
+            p_user_id: parent.id,
+            p_action: `${type === 'deposit' ? 'Deposited' : 'Withdrew'} $${data.amount} ${type === 'deposit' ? 'to' : 'from'} ${childName}'s account`,
+            p_entity_type: 'transaction',
+            p_entity_id: accountId,
+            p_metadata: {
+              amount: parseFloat(data.amount),
+              description: data.description,
+              child_id: childId,
+              transaction_date: format(data.transactionDate, 'yyyy-MM-dd')
+            }
+          }), 6000);
+        } catch (_) { /* noop */ }
       }
 
       form.reset();

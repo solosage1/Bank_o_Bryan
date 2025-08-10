@@ -1,9 +1,4 @@
-import dynamic from 'next/dynamic';
-import React, { Suspense } from 'react';
-
-const ChildClient = dynamic(() => import('./ChildClient'), { suspense: true });
-
-function ChildSkeleton() {
+export default function Loading() {
   return (
     <main role="main" className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
       <div className="text-center">
@@ -11,14 +6,6 @@ function ChildSkeleton() {
         <p className="text-gray-600">Loading child…</p>
       </div>
     </main>
-  );
-}
-
-export default async function ChildPage() {
-  return (
-    <Suspense fallback={<ChildSkeleton />}> 
-      <ChildClient />
-    </Suspense>
   );
 }
 

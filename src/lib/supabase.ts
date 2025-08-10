@@ -5,7 +5,10 @@ import type { Database } from '@/types/supabase';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
+// Export a readable flag that downstream code can use to avoid hanging on network calls
+export const isSupabaseConfigured: boolean = Boolean(supabaseUrl && supabaseAnonKey);
+
+if (!isSupabaseConfigured) {
   // Surface a readable console error but do not crash the client bundle
   // Netlify: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in site env
   // This allows the app to render and show the login/home even while backend is misconfigured
@@ -53,7 +56,7 @@ export const signInWithGoogle = async () => {
     if (typeof window !== 'undefined') window.location.assign(target);
     return { provider: 'google', url: target } as any;
   }
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!isSupabaseConfigured) {
     throw new Error('Supabase is not configured. Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
   }
   const { data, error } = await supabase.auth.signInWithOAuth({

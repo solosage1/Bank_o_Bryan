@@ -1,9 +1,4 @@
-import dynamic from 'next/dynamic';
-import React, { Suspense } from 'react';
-
-const DashboardClient = dynamic(() => import('./DashboardClient'), { suspense: true });
-
-function DashboardSkeleton() {
+export default function Loading() {
   return (
     <main role="main" className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
       <div className="text-center">
@@ -11,15 +6,6 @@ function DashboardSkeleton() {
         <p className="text-gray-600">Loading dashboard…</p>
       </div>
     </main>
-  );
-}
-
-export default async function DashboardPage() {
-  return (
-    <Suspense fallback={<DashboardSkeleton />}> 
-      {/* Client island */}
-      <DashboardClient />
-    </Suspense>
   );
 }
 

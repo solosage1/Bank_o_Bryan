@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { isE2EEnabled, loadCurrentTiers } from '@/lib/e2e';
+import { isE2EEnabled, loadCurrentTiers, supabaseWithTimeout } from '@/lib/e2e';
 
 export type FamilyTier = { lower_cents: number; upper_cents: number | null; apr_bps: number };
 
@@ -31,13 +31,16 @@ export function useFamilyInterestTiers(familyId?: string | null) {
           return;
         }
 
-        const { data, error } = await (supabase as any)
-          .from('interest_tiers')
-          .select('lower_bound_cents, upper_bound_cents, apr_bps, effective_from')
-          .eq('family_id', familyId)
-          .lte('effective_from', today)
-          .order('effective_from', { ascending: false })
-          .order('lower_bound_cents', { ascending: true });
+        const { data, error } = await supabaseWithTimeout(
+          async () => (supabase as any)
+            .from('interest_tiers')
+            .select('lower_bound_cents, upper_bound_cents, apr_bps, effective_from')
+            .eq('family_id', familyId)
+            .lte('effective_from', today)
+            .order('effective_from', { ascending: false })
+            .order('lower_bound_cents', { ascending: true }),
+          6000
+        );
         if (error) throw error;
         const rows = (data as any[]) || [];
         if (rows.length === 0) {

@@ -58,19 +58,39 @@ export default function E2EBadge() {
     >
       <span>E2E mode</span>
       <div className="relative">
-        <button
-          type="button"
-          aria-label="Disable E2E options"
-          className="px-1.5 py-0.5 rounded border border-yellow-400 bg-white/70 text-yellow-900 hover:bg-white"
-          onClick={() => setOpen(v => !v)}
-        >
-          •••
-        </button>
         {open ? (
-          <div className="absolute left-0 mt-1 w-48 rounded-md border border-yellow-300 bg-white shadow-md text-[11px] text-yellow-900">
+          <button
+            type="button"
+            aria-label="Disable E2E options"
+            id="e2e-menu-button"
+            aria-haspopup="menu"
+            aria-controls="e2e-menu"
+            aria-expanded="true"
+            className="px-1.5 py-0.5 rounded border border-yellow-400 bg-white/70 text-yellow-900 hover:bg-white"
+            onClick={() => setOpen(false)}
+          >
+            •••
+          </button>
+        ) : (
+          <button
+            type="button"
+            aria-label="Disable E2E options"
+            id="e2e-menu-button"
+            aria-haspopup="menu"
+            aria-controls="e2e-menu"
+            aria-expanded="false"
+            className="px-1.5 py-0.5 rounded border border-yellow-400 bg-white/70 text-yellow-900 hover:bg-white"
+            onClick={() => setOpen(true)}
+          >
+            •••
+          </button>
+        )}
+        {open ? (
+          <div id="e2e-menu" role="menu" aria-labelledby="e2e-menu-button" className="absolute left-0 mt-1 w-48 rounded-md border border-yellow-300 bg-white shadow-md text-[11px] text-yellow-900">
             <button
               type="button"
               aria-label="Disable E2E"
+              role="menuitem"
               className="w-full text-left px-2 py-1 hover:bg-yellow-50"
               onClick={handleDisable}
             >
@@ -79,10 +99,11 @@ export default function E2EBadge() {
             <button
               type="button"
               aria-label="Disable and clear local data"
+              role="menuitem"
               className="w-full text-left px-2 py-1 hover:bg-yellow-50 border-t border-yellow-200"
               onClick={handleDisableAndClear}
             >
-              Disable & Clear local data
+              Disable and clear local data
             </button>
           </div>
         ) : null}
