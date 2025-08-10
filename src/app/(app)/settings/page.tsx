@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { TIMEZONES } from '@/lib/time';
 import { supabase } from '@/lib/supabase';
+import { isE2EEnabled, ensureDefaultFamily, saveTierSet } from '@/lib/e2e';
 
 const tzOptions = TIMEZONES;
 
@@ -33,13 +34,7 @@ export default function SettingsPage() {
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [editingRows, setEditingRows] = useState<Array<{ lower: string; upper: string; apr: string }>>([]);
 
-  const isBypass = useMemo(() => (
-    process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
-    (typeof window !== 'undefined' && (
-      new URLSearchParams(window.location.search).get('e2e') === '1' ||
-      window.localStorage.getItem('E2E_BYPASS') === '1'
-    ))
-  ), []);
+  const isBypass = useMemo(() => isE2EEnabled(), []);
 
   useEffect(() => {
     if (family) {
@@ -47,7 +42,8 @@ export default function SettingsPage() {
       setTimezone(family.timezone ?? 'America/New_York');
       setSiblingVisibility((family as any).sibling_visibility ?? true);
     }
-  }, [family]);
+    if (isBypass) ensureDefaultFamily();
+  }, [family, isBypass]);
 
   // Load scheduled tiers from localStorage for this family (E2E only)
   useEffect(() => {
@@ -122,21 +118,23 @@ export default function SettingsPage() {
       return;
     }
 
-    // Best-effort E2E-only: stash tiers in localStorage under date->list
     const dateKey = effectiveDate || new Date().toISOString().slice(0, 10);
-    if (typeof window === 'undefined') return;
     const familyId = family?.id ?? 'fam-e2e';
     const parsed = tiers.map(t => ({
       lower_cents: Math.round(Number(t.lower || '0') * 100) || 0,
       upper_cents: t.upper ? Math.round(Number(t.upper) * 100) : null,
       apr_bps: Math.round(Number(t.apr || '0')) || 0,
     }));
-    const raw = window.localStorage.getItem('E2E_TIERS');
-    const all = raw ? JSON.parse(raw) : {};
-    all[familyId] = all[familyId] || {};
-    all[familyId][dateKey] = parsed;
-    window.localStorage.setItem('E2E_TIERS', JSON.stringify(all));
-    setScheduledByDate(all[familyId]);
+    if (isBypass) {
+      saveTierSet(familyId, dateKey, parsed);
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = window.localStorage.getItem('E2E_TIERS');
+          const all = raw ? JSON.parse(raw) : {};
+          setScheduledByDate(all[familyId] || {});
+        } catch {}
+      }
+    }
     // Hint the app to allow local child/account creation and faster ticker for E2E
     try {
       window.localStorage.setItem('E2E_ALLOW_LOCAL_CHILD', '1');

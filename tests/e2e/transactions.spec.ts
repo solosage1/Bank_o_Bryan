@@ -1,5 +1,5 @@
 import { test, expect, Request } from '@playwright/test';
-import { primeBypassAndFamily } from './utils/prime';
+import { primeBypassAndFamily, gotoE2E } from './utils/prime';
 
 function isChildrenGet(req: Request) {
   return req.method() === 'GET' && /\/rest\/v1\/children/.test(req.url());
@@ -98,6 +98,54 @@ test.describe('Transactions: deposit and withdrawal', () => {
     await dialog.getByRole('button', { name: /Make Withdrawal/i }).click();
     await expect(page.getByRole('dialog', { name: /Make Withdrawal/i })).toBeHidden({ timeout: 10000 });
     await expect(page.getByText('Withdrawal of $3.00 processed for Sky.', { exact: true }).first()).toBeVisible();
+  });
+
+  test('e2e local fallback: deposit works without RPC mocks (smoke)', async ({ page }) => {
+    // No network mocks here; rely on Dev E2E local path
+    await primeBypassAndFamily(page);
+    await gotoE2E(page, '/dashboard');
+
+    // Ensure at least one child exists in E2E
+    const noChildren = await page.getByText(/No children added yet/i).isVisible().catch(() => false);
+    if (noChildren) {
+      await page.getByRole('button').filter({ hasText: /Add (Your First )?Child/i }).first().click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+      await dialog.getByLabel('Name', { exact: true }).fill('E2E Tx');
+      await page.getByRole('button', { name: /Create Child/i }).click();
+      await expect(dialog).toBeHidden({ timeout: 8000 });
+    }
+
+    // Read pre-count of transactions for first account
+    const pre = await page.evaluate(() => {
+      try {
+        const accounts = JSON.parse(localStorage.getItem('E2E_ACCOUNTS') || '[]');
+        const accountId = accounts[0]?.id;
+        const txns = JSON.parse(localStorage.getItem('E2E_TRANSACTIONS') || '{}');
+        const count = accountId ? (txns[accountId]?.length || 0) : 0;
+        return { accountId, count };
+      } catch { return { accountId: null, count: 0 }; }
+    });
+
+    // Make a small deposit via UI
+    await page.getByRole('button', { name: /Deposit/i }).first().click();
+    const dep = page.getByRole('dialog');
+    await expect(dep).toBeVisible();
+    await dep.getByLabel('Amount').fill('1.00');
+    await dep.getByLabel('Description').fill('E2E smoke');
+    await dep.getByRole('button', { name: /Make Deposit/i }).click();
+    await expect(dep).toBeHidden({ timeout: 8000 });
+
+    // Assert localStorage updated for that account
+    if (pre.accountId) {
+      await page.waitForFunction(([acctId, before]) => {
+        try {
+          const txns = JSON.parse(localStorage.getItem('E2E_TRANSACTIONS') || '{}');
+          const count = (txns[acctId as string]?.length || 0);
+          return count > (before as number);
+        } catch { return false; }
+      }, [pre.accountId, pre.count], { timeout: 8000 });
+    }
   });
 });
 

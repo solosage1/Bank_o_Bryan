@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./useAuth";
+import { isE2EEnabled, ensureDefaultFamily, getFamily } from '@/lib/e2e';
 
 export type AuthGuardStatus =
   | "loading"
@@ -18,20 +19,18 @@ export type AuthGuardStatus =
 export function useRequireAuth(): AuthGuardStatus {
   const { user, family, loading } = useAuth();
   const router = useRouter();
-  const isBypass =
-    process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
-    (typeof window !== 'undefined' && (
-      new URLSearchParams(window.location.search).get('e2e') === '1' ||
-      window.localStorage.getItem('E2E_BYPASS') === '1'
-    ));
+  const isBypass = isE2EEnabled();
 
-  // In E2E bypass, unblock onboarding form immediately regardless of auth state
+  // In E2E bypass, ensure default family and unblock onboarding if needed
   const isOnboardingPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/onboarding');
   const isBypassOnOnboarding = isBypass && isOnboardingPath;
 
   useEffect(() => {
     // Skip redirects entirely when in bypass mode
-    if (isBypass) return;
+    if (isBypass) {
+      ensureDefaultFamily();
+      return;
+    }
     if (loading) return;
     if (!user) {
       router.replace("/");
@@ -42,7 +41,10 @@ export function useRequireAuth(): AuthGuardStatus {
     }
   }, [loading, user, family, router, isBypass]);
 
-  if (isBypass) return family ? "ready" : "needsOnboarding";
+  if (isBypass) {
+    const fam = family ?? getFamily();
+    return fam ? "ready" : "needsOnboarding";
+  }
   if (loading) return "loading";
   if (!user) return "unauthenticated";
   if (user && !family) return "needsOnboarding";

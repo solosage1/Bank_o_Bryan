@@ -1,5 +1,5 @@
 import { test, expect, Request } from '@playwright/test';
-import { primeBypassAndFamily } from './utils/prime';
+import { primeBypassAndFamily, gotoE2E } from './utils/prime';
 
 function isChildrenGet(req: Request) {
   return req.method() === 'GET' && /\/rest\/v1\/children/.test(req.url());
@@ -56,7 +56,7 @@ test.describe('Dashboard → Child Detail Navigation', () => {
       return route.fallback();
     });
 
-    await page.goto('/dashboard');
+    await gotoE2E(page, '/dashboard');
 
     // Card is focusable and clickable; heading shows name and nickname
     await expect(page.getByRole('heading', { name: /ChildAlpha/ })).toBeVisible();

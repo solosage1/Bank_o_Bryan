@@ -15,6 +15,8 @@
     "test": "vitest run tests/unit",
     "test:watch": "vitest",
     "e2e": "playwright test",
+    "e2e:offline": "playwright test --config=playwright.e2e.offline.config.ts",
+    "e2e:backend": "playwright test --config=playwright.e2e.backend.config.ts",
     "type-check": "tsc --noEmit",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",

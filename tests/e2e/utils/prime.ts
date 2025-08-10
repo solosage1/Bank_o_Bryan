@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 export async function primeBypassAndFamily(
   page: Page,
@@ -18,6 +19,13 @@ export async function primeBypassAndFamily(
       }
     } catch {}
   }, [familyName, timezone]);
+}
+
+
+export async function gotoE2E(page: Page, path: string) {
+  const url = path.includes('?') ? `${path}&e2e=1` : `${path}?e2e=1`;
+  await page.goto(url);
+  await expect(page.getByLabel('E2E mode')).toBeVisible();
 }
 
 

@@ -10,6 +10,7 @@ const config: PlaywrightTestConfig = {
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
     headless: true,
+    screenshot: 'only-on-failure',
   },
   webServer: {
     command: 'pnpm dev',
@@ -20,7 +21,6 @@ const config: PlaywrightTestConfig = {
       NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test_anon_key',
       NEXT_PUBLIC_SITE_URL: `http://localhost:${PORT}`,
-      NEXT_PUBLIC_E2E_BYPASS_AUTH: '1',
     },
   },
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { isE2EEnabled } from '@/lib/e2e';
 import { supabase } from '@/lib/supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -24,6 +25,11 @@ export function useRealtime({
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
 
   useEffect(() => {
+    // Disable realtime in E2E to avoid noisy connections
+    if (isE2EEnabled()) {
+      setChannel(null);
+      return;
+    }
     // Create channel
     let newChannel = supabase.channel(`realtime-${table}`);
 

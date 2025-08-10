@@ -33,6 +33,7 @@ import { supabase } from '@/lib/supabase';
 import { transactionSchema, type TransactionFormData } from '@/lib/schemas/transaction';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { isE2EEnabled, supabaseWithTimeout, processTransactionLocally } from '@/lib/e2e';
 
 // schema now lives in @/lib/schemas/transaction
 
@@ -98,40 +99,54 @@ export function TransactionModal({
       }
       setIsSubmitting(true);
 
-      // Prefer PRD signature (cents-based) and fall back to legacy (decimal-based)
-      const prdPayload: any = {
-        p_account_id: accountId,
-        p_type: type, // PRD accepts text and casts to enum
-        p_amount_cents: Math.round(parseFloat(data.amount) * 100),
-        p_description: data.description,
-        p_parent_id: parent.id,
-        p_transaction_date: format(data.transactionDate, 'yyyy-MM-dd'),
-        p_require_confirm: false,
-      };
-
-      let { error } = await supabase.rpc('process_transaction', prdPayload as any);
-
-      if (error) {
-        // If PRD function isn't available/matching, try legacy signature
-        const looksLikeMissingOrMismatch =
-          (error as any)?.code === 'PGRST202' ||
-          /No function/i.test((error as any)?.message || '') ||
-          /not found|404/i.test((error as any)?.details || '');
-
-        if (looksLikeMissingOrMismatch) {
-          const legacyPayload: any = {
+      const cents = Math.round(parseFloat(data.amount) * 100);
+      try {
+        await supabaseWithTimeout(async () => {
+          // Prefer PRD signature (cents-based) and fall back to legacy (decimal-based)
+          const prdPayload: any = {
             p_account_id: accountId,
             p_type: type,
-            p_amount: parseFloat(data.amount),
+            p_amount_cents: cents,
             p_description: data.description,
             p_parent_id: parent.id,
             p_transaction_date: format(data.transactionDate, 'yyyy-MM-dd'),
+            p_require_confirm: false,
           };
-          ({ error } = await supabase.rpc('process_transaction', legacyPayload as any));
+          let { error } = await supabase.rpc('process_transaction', prdPayload as any);
+          if (error) {
+            const looksLikeMissingOrMismatch =
+              (error as any)?.code === 'PGRST202' ||
+              /No function/i.test((error as any)?.message || '') ||
+              /not found|404/i.test((error as any)?.details || '');
+            if (looksLikeMissingOrMismatch) {
+              const legacyPayload: any = {
+                p_account_id: accountId,
+                p_type: type,
+                p_amount: parseFloat(data.amount),
+                p_description: data.description,
+                p_parent_id: parent.id,
+                p_transaction_date: format(data.transactionDate, 'yyyy-MM-dd'),
+              };
+              ({ error } = await supabase.rpc('process_transaction', legacyPayload as any));
+            }
+          }
+          if (error) throw error;
+          return null as unknown as any;
+        }, 6000);
+      } catch (err) {
+        if (isE2EEnabled()) {
+          // Local fallback
+          await processTransactionLocally({
+            accountId,
+            type,
+            amount_cents: cents,
+            description: data.description,
+            date: format(data.transactionDate, 'yyyy-MM-dd'),
+          });
+        } else {
+          throw err;
         }
       }
-
-      if (error) throw error;
 
       // Log audit event
       if (parent.family_id) {

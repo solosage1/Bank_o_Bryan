@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { primeBypassAndFamily } from './utils/prime';
+import { primeBypassAndFamily, gotoE2E } from './utils/prime';
 
 test.describe('Sign out flow', () => {
   test('Clicking Sign Out logs out and returns to landing', async ({ page }) => {
     await primeBypassAndFamily(page);
-    await page.goto('/dashboard');
+    await gotoE2E(page, '/dashboard');
 
     const signOutButton = page.getByRole('button', { name: /Sign Out/i });
     await expect(signOutButton).toBeVisible();

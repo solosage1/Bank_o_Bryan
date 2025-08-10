@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { BalanceTicker } from '@/components/banking/BalanceTicker';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { isE2EEnabled, supabaseWithTimeout, fetchChildLocally, fetchAccountLocally, fetchTransactionsLocally } from '@/lib/e2e';
 
 interface ChildRow {
   id: string;
@@ -35,13 +36,7 @@ export default function ChildPage() {
   const { user, family, loading: authLoading } = useAuth();
 
   const childId = String(params?.id || '');
-  const isBypass = useMemo(() => (
-    process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
-    (typeof window !== 'undefined' && (
-      new URLSearchParams(window.location.search).get('e2e') === '1' ||
-      window.localStorage.getItem('E2E_BYPASS') === '1'
-    ))
-  ), []);
+  const isBypass = useMemo(() => isE2EEnabled(), []);
 
   const [loading, setLoading] = useState(true);
   const [child, setChild] = useState<ChildRow | null>(null);
@@ -67,36 +62,59 @@ export default function ChildPage() {
       setLoading(true);
       try {
         // Fetch child
-        const { data: childRow, error: childErr } = await supabase
-          .from('children')
-          .select('id, name, nickname, family_id')
-          .eq('id', childId)
-          .maybeSingle();
-        if (childErr) throw childErr;
-        if (aborted) return;
-        setChild(childRow as any);
-
-        // Fetch account for child
-        const { data: acctRow } = await supabase
-          .from('accounts')
-          .select('id, child_id, balance')
-          .eq('child_id', childId)
-          .maybeSingle();
-        if (aborted) return;
-        setAccount(acctRow as any);
-
-        // Fetch recent transactions if account exists
-        if (acctRow?.id) {
-          const { data: txnRows } = await supabase
-            .from('transactions')
-            .select('id, account_id, created_at, amount, description')
-            .eq('account_id', acctRow.id)
-            .order('created_at', { ascending: false })
-            .limit(10);
+        try {
+          const { data: childRow, error: childErr } = await supabaseWithTimeout(
+            async () => supabase
+              .from('children')
+              .select('id, name, nickname, family_id')
+              .eq('id', childId)
+              .maybeSingle(),
+            6000
+          );
+          if (childErr) throw childErr;
           if (aborted) return;
-          setTxns(txnRows as any || []);
-        } else {
-          setTxns([]);
+          setChild(childRow as any);
+          // Account
+          const { data: acctRow } = await supabaseWithTimeout(
+            async () => supabase
+              .from('accounts')
+              .select('id, child_id, balance')
+              .eq('child_id', childId)
+              .maybeSingle(),
+            6000
+          );
+          if (aborted) return;
+          setAccount(acctRow as any);
+          if (acctRow?.id) {
+            const { data: txnRows } = await supabaseWithTimeout(
+              async () => supabase
+                .from('transactions')
+                .select('id, account_id, created_at, amount, description')
+                .eq('account_id', acctRow.id)
+                .order('created_at', { ascending: false })
+                .limit(10),
+              6000
+            );
+            if (aborted) return;
+            setTxns((txnRows as any) || []);
+          } else {
+            setTxns([]);
+          }
+        } catch (err) {
+          if (isBypass) {
+            const ch = await fetchChildLocally(childId);
+            setChild(ch as any);
+            const acct = await fetchAccountLocally(childId);
+            setAccount(acct as any);
+            if (acct?.id) {
+              const rows = await fetchTransactionsLocally(acct.id);
+              setTxns(rows as any);
+            } else {
+              setTxns([]);
+            }
+          } else {
+            throw err;
+          }
         }
       } finally {
         if (!aborted) setLoading(false);
@@ -104,7 +122,7 @@ export default function ChildPage() {
     };
     if (childId) load();
     return () => { aborted = true; };
-  }, [childId]);
+  }, [childId, isBypass]);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);

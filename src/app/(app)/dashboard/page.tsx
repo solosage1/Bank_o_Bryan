@@ -20,16 +20,12 @@ import type { ChildWithAccount } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useFamilyInterestTiers } from '@/hooks/useFamilyInterestTiers';
 import { getBrowserTimeZone, getTimezoneLabel, TIMEZONES } from '@/lib/time';
+import { isE2EEnabled, supabaseWithTimeout, fetchChildrenWithAccounts, createChildLocally } from '@/lib/e2e';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, parent, family, loading: authLoading, signOut } = useAuth();
-  const isBypass =
-    process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
-    (typeof window !== 'undefined' && (
-      new URLSearchParams(window.location.search).get('e2e') === '1' ||
-      window.localStorage.getItem('E2E_BYPASS') === '1'
-    ));
+  const isBypass = isE2EEnabled();
   const { toast } = useToast();
   const [children, setChildren] = useState<ChildWithAccount[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(false);
@@ -112,38 +108,31 @@ export default function DashboardPage() {
   const familyId = family?.id;
   const fetchChildren = useCallback(async () => {
     try {
-      let query = supabase
-        .from('children')
-        .select(`
-          *,
-          account:accounts(*)
-        `);
-
-      // In normal mode, scope to family; in bypass, allow global fetch for route interception
-      if (familyId && !isBypass) {
-        query = query.eq('family_id', familyId);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: true });
+      const { data, error } = await supabaseWithTimeout(
+        async () => {
+          let query = supabase
+            .from('children')
+            .select(`
+              *,
+              account:accounts(*)
+            `);
+          if (familyId && !isBypass) {
+            query = query.eq('family_id', familyId);
+          }
+          const res = await query.order('created_at', { ascending: true });
+          return res;
+        },
+        6000
+      );
       if (error) throw error;
       setChildren(data || []);
     } catch (error) {
       console.error('Error fetching children:', error);
-      // Bypass fallback: when running E2E without explicit ?e2e=1 flag, use localStorage as a stub
-      const isHardBypass = (typeof window !== 'undefined') && new URLSearchParams(window.location.search).get('e2e') === '1';
-      if (isBypass && !isHardBypass && typeof window !== 'undefined') {
-        try {
-          const childrenRaw = window.localStorage.getItem('E2E_CHILDREN');
-          const accountsRaw = window.localStorage.getItem('E2E_ACCOUNTS');
-          const lsChildren: any[] = childrenRaw ? JSON.parse(childrenRaw) : [];
-          const lsAccounts: any[] = accountsRaw ? JSON.parse(accountsRaw) : [];
-          const acctByChild = new Map<string, any>(lsAccounts.map((a) => [a.child_id, a]));
-          const merged = lsChildren.map((c) => ({ ...c, account: acctByChild.get(c.id) ?? null }));
-          setChildren(merged);
-          return;
-        } catch (_) {
-          // noop; leave children as-is
-        }
+      if (isBypass) {
+        const famId = familyId ?? 'fam-e2e';
+        const local = await fetchChildrenWithAccounts(famId);
+        setChildren(local as unknown as ChildWithAccount[]);
+        return;
       }
     }
   }, [familyId, isBypass]);
@@ -253,11 +242,13 @@ export default function DashboardPage() {
         payload.family_id = family.id;
       }
 
-      const { data: childRow, error: childErr } = await supabase
-        .from('children')
-        .insert(payload)
-        .select('id, name')
-        .single();
+      const { data: childRow, error: childErr } = await supabaseWithTimeout(
+        async () => {
+          const res = await supabase.from('children').insert(payload).select('id, name').single();
+          return res;
+        },
+        6000
+      );
 
       if (childErr) throw childErr;
 
@@ -304,32 +295,15 @@ export default function DashboardPage() {
       track('child_added', { phase: 'error', message: error instanceof Error ? error.message : String(error) });
       const message = error instanceof Error ? error.message : 'Failed to create child';
 
-      // Bypass fallback (guarded by explicit E2E flag) to allow local child/account creation during E2E-only flows
-      const isHardBypass = (typeof window !== 'undefined') && new URLSearchParams(window.location.search).get('e2e') === '1';
-      const allowLocalChild = (typeof window !== 'undefined') && window.localStorage.getItem('E2E_ALLOW_LOCAL_CHILD') === '1';
-      if (isBypass && allowLocalChild && !isHardBypass && typeof window !== 'undefined') {
+      if (isBypass) {
         try {
-          // Create child locally
-          const childId = `child-${Date.now()}`;
-          const accountId = `acct-${Date.now()}`;
-          const childrenRaw = window.localStorage.getItem('E2E_CHILDREN');
-          const accountsRaw = window.localStorage.getItem('E2E_ACCOUNTS');
-          const lsChildren: any[] = childrenRaw ? JSON.parse(childrenRaw) : [];
-          const lsAccounts: any[] = accountsRaw ? JSON.parse(accountsRaw) : [];
-          const childRow = { id: childId, name: newChild.name.trim(), age: newChild.age || null, nickname: newChild.nickname?.trim() || null };
-          const accountRow = { id: accountId, child_id: childId, balance: 10, total_earned: 0 };
-          lsChildren.push(childRow);
-          lsAccounts.push(accountRow);
-          window.localStorage.setItem('E2E_CHILDREN', JSON.stringify(lsChildren));
-          window.localStorage.setItem('E2E_ACCOUNTS', JSON.stringify(lsAccounts));
-          toast({ title: 'Child created', description: `${childRow.name} was added to your family.` });
+          const { childId } = await createChildLocally({ name: newChild.name.trim(), nickname: newChild.nickname?.trim() });
+          toast({ title: 'Child created', description: `${newChild.name.trim()} was added to your family.` });
           setIsAddChildOpen(false);
           setNewChild({ name: '', age: '', nickname: '' });
           await fetchChildren();
           return;
-        } catch (_) {
-          // fall through to inline error
-        }
+        } catch {}
       }
 
       setCreateChildError(`Failed to create child: ${message}`);

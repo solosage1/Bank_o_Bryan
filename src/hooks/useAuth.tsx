@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { Parent, Family, AuthContextType } from '@/types';
+import { isE2EEnabled, ensureDefaultFamily, getFamily } from '@/lib/e2e';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -35,6 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           window.localStorage.removeItem('E2E_FAMILY');
           window.localStorage.removeItem('E2E_CHILDREN');
           window.localStorage.removeItem('E2E_ACCOUNTS');
+          window.localStorage.removeItem('E2E_TRANSACTIONS');
+          window.localStorage.removeItem('E2E_TIERS');
           // Explicitly clear any cached timezone/name used by dashboard to avoid stale display on logout
           try { window.dispatchEvent(new Event('e2e-localstorage-updated')); } catch {}
         } catch (_) {
@@ -53,14 +56,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshProfile = async () => {
-    const isBypass =
-      process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
-      (typeof window !== 'undefined' && (
-        new URLSearchParams(window.location.search).get('e2e') === '1' ||
-        window.localStorage.getItem('E2E_BYPASS') === '1'
-      ));
+    const isBypass = isE2EEnabled();
     if (isBypass) {
-      // Hydrate from localStorage in bypass mode ONLY if keys exist; otherwise leave nulls to allow onboarding
+      // Ensure defaults exist in E2E and hydrate from localStorage
+      ensureDefaultFamily();
       if (typeof window !== 'undefined') {
         try {
           const storedParent = window.localStorage.getItem('E2E_PARENT');
@@ -116,14 +115,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // E2E bypass: provide a fake authenticated user across all routes and hydrate parent/family from localStorage
-    const isBypass =
-      process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
-      (typeof window !== 'undefined' &&
-        (new URLSearchParams(window.location.search).get('e2e') === '1' ||
-         window.localStorage.getItem('E2E_BYPASS') === '1'));
+    const isBypass = isE2EEnabled();
 
     if (isBypass) {
       setUser({ id: 'e2e-user' } as unknown as User);
+      ensureDefaultFamily();
       let onStorage: ((ev: StorageEvent) => void) | undefined;
       let onLocalSignal: (() => void) | undefined;
       const hydrate = () => {
