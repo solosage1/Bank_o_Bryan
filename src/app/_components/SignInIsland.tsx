@@ -71,6 +71,7 @@ export default function SignInIsland(): JSX.Element {
       size="lg"
       variant="google"
       className="w-full rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+      aria-label="Continue with Google"
     >
       {isSubmitting ? (
         <div className="flex items-center space-x-2">

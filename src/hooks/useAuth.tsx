@@ -116,37 +116,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         (new URLSearchParams(window.location.search).get('e2e') === '1' ||
          window.localStorage.getItem('E2E_BYPASS') === '1'));
 
-    // On the public home page, avoid initializing Supabase auth entirely to keep initial JS small
-    // Auth-aware pages will still mount the provider and trigger initialization below.
-    const isPublicHome = typeof window !== 'undefined' && window.location.pathname === '/';
-
     if (isBypass) {
       setUser({ id: 'e2e-user' } as unknown as User);
+      let onStorage: ((ev: StorageEvent) => void) | undefined;
+      let onLocalSignal: (() => void) | undefined;
+      const hydrate = () => {
+        if (typeof window === 'undefined') return;
+        const p = window.localStorage.getItem('E2E_PARENT');
+        const f = window.localStorage.getItem('E2E_FAMILY');
+        setParent(p ? JSON.parse(p) : null);
+        setFamily(f ? JSON.parse(f) : null);
+      };
       if (typeof window !== 'undefined') {
         try {
-          const storedParent = window.localStorage.getItem('E2E_PARENT');
-          const storedFamily = window.localStorage.getItem('E2E_FAMILY');
-          setParent(storedParent ? JSON.parse(storedParent) : null);
-          setFamily(storedFamily ? JSON.parse(storedFamily) : null);
-          const onStorage = (ev: StorageEvent) => {
+          hydrate();
+          onStorage = (ev: StorageEvent) => {
             if (ev.key === 'E2E_PARENT' || ev.key === 'E2E_FAMILY') {
-              const p = window.localStorage.getItem('E2E_PARENT');
-              const f = window.localStorage.getItem('E2E_FAMILY');
-              setParent(p ? JSON.parse(p) : null);
-              setFamily(f ? JSON.parse(f) : null);
+              hydrate();
             }
           };
+          onLocalSignal = () => hydrate();
           window.addEventListener('storage', onStorage);
-          return () => window.removeEventListener('storage', onStorage);
+          window.addEventListener('e2e-localstorage-updated', onLocalSignal as EventListener);
         } catch (_) {}
       }
       setLoading(false);
-      return;
-    }
-
-    if (isPublicHome) {
-      setLoading(false);
-      return;
+      return () => {
+        if (typeof window !== 'undefined') {
+          if (onStorage) window.removeEventListener('storage', onStorage);
+          if (onLocalSignal) window.removeEventListener('e2e-localstorage-updated', onLocalSignal as EventListener);
+        }
+      };
     }
 
     // Get initial session

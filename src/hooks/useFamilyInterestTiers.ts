@@ -21,6 +21,33 @@ export function useFamilyInterestTiers(familyId?: string | null) {
         setLoading(true);
         setError(null);
         const today = new Date().toISOString().slice(0, 10);
+
+        const isBypass =
+          process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
+          (typeof window !== 'undefined' && (
+            new URLSearchParams(window.location.search).get('e2e') === '1' ||
+            window.localStorage.getItem('E2E_BYPASS') === '1'
+          ));
+
+        if (isBypass && typeof window !== 'undefined') {
+          // Read from localStorage stub where settings page can write tier schedules during E2E
+          try {
+            const raw = window.localStorage.getItem('E2E_TIERS');
+            const all: Record<string, Record<string, FamilyTier[]>> = raw ? JSON.parse(raw) : {};
+            const byFamily = all[familyId] || {};
+            const dates = Object.keys(byFamily).filter(d => d <= today).sort().reverse();
+            if (dates.length === 0) {
+              if (!cancelled) setTiers([]);
+              return;
+            }
+            const latest = dates[0];
+            if (!cancelled) setTiers(byFamily[latest] || []);
+            return;
+          } catch (e) {
+            // fall through to backend fetch on parse errors
+          }
+        }
+
         const { data, error } = await (supabase as any)
           .from('interest_tiers')
           .select('lower_bound_cents, upper_bound_cents, apr_bps, effective_from')

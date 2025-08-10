@@ -79,7 +79,7 @@ export default function HomePage(): JSX.Element {
                   Sign in with your Google account to create your family banking experience
                 </CardDescription>
               </CardHeader>
-              <CardContent className="px-8 pb-8">
+               <CardContent className="px-8 pb-8">
                 {/* Client island renders the interactive button and handles redirects */}
                 <SignInIsland />
                 {/* SSR-visible CTA fallback for non-JS environments */}
@@ -91,9 +91,9 @@ export default function HomePage(): JSX.Element {
                 <div className="mt-6 text-center">
                   <p className="text-sm text-gray-500">
                     By signing in, you agree to our{' '}
-                    <Link prefetch={false} href="/legal/terms" className="underline underline-offset-2 hover:text-gray-700">terms of service</Link>
+                    <Link prefetch={false} href="/legal/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-700">terms of service</Link>
                     {' '}and{' '}
-                    <Link prefetch={false} href="/legal/privacy" className="underline underline-offset-2 hover:text-gray-700">privacy policy</Link>.
+                    <Link prefetch={false} href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-700">privacy policy</Link>.
                   </p>
                 </div>
               </CardContent>

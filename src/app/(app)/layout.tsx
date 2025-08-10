@@ -1,13 +1,7 @@
-import { AuthProvider } from '@/hooks/useAuth';
-import { Toaster } from '@/components/ui/toaster';
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <AuthProvider>
-      {children}
-      <Toaster />
-    </AuthProvider>
-  );
+  // Providers (Auth + Toaster) are mounted once at the root layout via `src/app/layout.tsx`.
+  // Avoid double-mounting here to prevent duplicate toasts and duplicated context providers.
+  return children as React.ReactElement;
 }
 
 

@@ -91,7 +91,7 @@ test.beforeEach(async ({ page }) => {
     // Schedule for a future date (pick an unselected gridcell if possible)
     await page.getByRole('button').filter({ hasText: /Pick a date|Mon|Tue|Wed|Thu|Fri|Sat|Sun/i }).first().click();
     // Choose any date cell that is not selected (naive approach)
-    const candidate = page.getByRole('gridcell').locator('not([aria-selected="true"])').first();
+    const candidate = page.getByRole('gridcell', { selected: false }).first();
     await candidate.click();
 
     // Compose a simple set: 0->50 @150 bps, 50->∞ @250 bps
