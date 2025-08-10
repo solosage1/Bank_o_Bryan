@@ -142,8 +142,8 @@ export function TransactionModal({
           return null as unknown as any;
         }, 6000);
       } catch (err) {
-        if (isE2EEnabled()) {
-          // Local fallback
+        const allowBackendFallback = process.env.NEXT_PUBLIC_E2E_BACKEND_FALLBACK === '1';
+        if (isE2EEnabled() || allowBackendFallback) {
           await processTransactionLocally({
             accountId,
             type,

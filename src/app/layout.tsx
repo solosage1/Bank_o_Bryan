@@ -1,6 +1,5 @@
 import './globals.css';
-import type { Metadata } from 'next';
-import Providers from '@/app/_components/Providers';
+import type { Metadata, Viewport } from 'next';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bankobryan.netlify.app';
 
@@ -43,6 +42,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
   },
+};
+
+export const viewport: Viewport = {
   themeColor: '#ffffff',
 };
 
@@ -59,7 +61,7 @@ export default function RootLayout({
             For sign-in and app functionality, please enable JavaScript. You can still read about Bank o&apos;Bryan below.
           </div>
         </noscript>
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );

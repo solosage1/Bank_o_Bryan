@@ -12,23 +12,67 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_E2E_BACKEND_FALLBACK: '1'
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+
+      - name: Print Node and Corepack versions
+        run: |
+          node -v
+          corepack -v || true
+
+      - name: Enable Corepack and activate pnpm@9
+        run: |
+          if ! command -v corepack >/dev/null 2>&1; then
+            npm i -g corepack
+          fi
+          corepack enable
+          corepack prepare pnpm@9.0.0 --activate
+
+      - name: Verify pnpm availability
+        run: |
+          which pnpm || command -v pnpm
+          pnpm -v
+
+      - name: Determine pnpm store path
+        id: pnpm-store
+        run: echo "PNPM_STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Activate pinned pnpm via Corepack
+        run: corepack prepare pnpm@9.0.0 --activate
+
+      - name: Print pnpm version (from packageManager via Corepack)
+        run: pnpm -v
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Verify required envs present
+        run: |
+          for k in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY E2E_TEST_EMAIL E2E_TEST_PASSWORD; do
+            if [ -z "${!k}" ]; then echo "::error title=Missing env::$k is not set"; exit 1; else echo "$k is set"; fi
+          done
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps

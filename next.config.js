@@ -5,6 +5,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  swcMinify: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -13,9 +14,20 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Transpile problematic ESM packages for stable bundling
+  transpilePackages: [
+    '@supabase/supabase-js',
+    'react-day-picker',
+    'react-remove-scroll',
+    'date-fns',
+    'use-callback-ref',
+    'react-style-singleton',
+  ],
   experimental: {
     // Reduce bundle size by optimizing icon package imports
+    // If instability occurs, switch to modularizeImports below
     optimizePackageImports: ['lucide-react'],
+    esmExternals: 'loose',
   },
 };
 

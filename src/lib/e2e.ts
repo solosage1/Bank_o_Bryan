@@ -277,21 +277,13 @@ export { dispatchLocalStorageUpdated };
 /** Removes E2E_BYPASS and strips `e2e=1` from the URL, then reloads (browser-only). */
 export function disableE2E(): void {
   if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.removeItem('E2E_BYPASS');
-  } catch {}
+  try { window.localStorage.removeItem('E2E_BYPASS'); } catch {}
+  // Only strip the param in-place without navigation; badge coordinates the reload
   try {
     const url = new URL(window.location.href);
-    if (url.searchParams.has('e2e')) {
-      url.searchParams.delete('e2e');
-      // Preserve hash
-      const nextHref = `${url.pathname}${url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''}${url.hash || ''}`;
-      window.history.replaceState(null, '', nextHref);
-    }
-  } catch {}
-  try {
-    // Force a full reload to ensure all client state is reset
-    window.location.reload();
+    url.searchParams.delete('e2e');
+    const nextHref = `${url.pathname}${url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''}${url.hash || ''}`;
+    window.history.replaceState(null, '', nextHref);
   } catch {}
 }
 

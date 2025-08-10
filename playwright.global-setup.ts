@@ -1,9 +1,9 @@
-import type { FullConfig } from '@playwright/test';
+/// <reference types="node" />
 import { ensureUserAndSession, buildStorageState, ensureOnboarded } from './tests/e2e/utils/seedAuth';
 import fs from 'fs';
 import path from 'path';
 
-async function globalSetup(_config: FullConfig) {
+async function globalSetup() {
   const baseURL = process.env.BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const { session, projectRef } = await ensureUserAndSession();
   await ensureOnboarded(session);

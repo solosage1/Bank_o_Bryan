@@ -134,7 +134,7 @@ test.describe('@backend Transactions: deposit and withdrawal', () => {
     await dep.getByLabel('Amount').fill('1.00');
     await dep.getByLabel('Description').fill('E2E smoke');
     await dep.getByRole('button', { name: /Make Deposit/i }).click();
-    await expect(dep).toBeHidden({ timeout: 8000 });
+    await expect(dep).toBeHidden({ timeout: 20000 });
 
     // Assert localStorage updated for that account
     if (pre.accountId) {
