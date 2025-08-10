@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -38,6 +38,21 @@ export function BalanceTicker({
     tiers
   });
 
+  const isBypass = useMemo(() => (
+    process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1' ||
+    (typeof window !== 'undefined' && (
+      new URLSearchParams(window.location.search).get('e2e') === '1' ||
+      window.localStorage.getItem('E2E_BYPASS') === '1'
+    ))
+  ), []);
+
+  // Rebase when props change
+  useEffect(() => {
+    setTickerBase({ base_value_cents: initialBalanceCents, base_timestamp_ms: Date.now(), tiers });
+    setBalanceCents(initialBalanceCents);
+    setPreviousBalanceCents(initialBalanceCents);
+  }, [initialBalanceCents, tiers]);
+
   // Subscribe to realtime balance updates
   useAccountBalance(accountId, (newBalance: number) => {
     const newCents = Math.round(newBalance * 100);
@@ -54,11 +69,17 @@ export function BalanceTicker({
   useEffect(() => {
     if (reducedMotion || tiers.length === 0) return;
     const id = setInterval(() => {
-      const val = computeTickerValue(Date.now(), tickerBase);
+      let val = computeTickerValue(Date.now(), tickerBase);
+      // In E2E bypass, amplify the change so UI visibly updates within a few seconds
+      if (isBypass && typeof window !== 'undefined') {
+        const speed = Number(window.localStorage.getItem('E2E_TICKER_SPEED') || '500000');
+        const delta = val - tickerBase.base_value_cents;
+        val = tickerBase.base_value_cents + delta * (isFinite(speed) && speed > 0 ? speed : 500000);
+      }
       setBalanceCents(Math.round(val));
     }, 1000);
     return () => clearInterval(id);
-  }, [tickerBase, reducedMotion, tiers]);
+  }, [tickerBase, reducedMotion, tiers, isBypass]);
 
   // Periodic rebase from server authority
   useEffect(() => {
@@ -118,7 +139,7 @@ export function BalanceTicker({
             animate={isAnimating ? { scale: [1, 1.2, 1] } : {}}
             transition={{ duration: 0.5 }}
           >
-            <DollarSign className={iconSizes[size]} />
+            <DollarSign aria-hidden="true" className={iconSizes[size]} />
           </motion.div>
         </div>
       )}
@@ -151,7 +172,7 @@ export function BalanceTicker({
                 isIncrease ? 'text-green-600' : 'text-red-600'
               )}
             >
-              <TrendingUp className={cn(
+              <TrendingUp aria-hidden="true" className={cn(
                 'w-3 h-3',
                 isDecrease && 'rotate-180'
               )} />

@@ -1,7 +1,9 @@
 import { Banknote, Sparkles, Target, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import SignInIsland from '@/app/_components/SignInIsland';
+import dynamic from 'next/dynamic';
+
+const SignInIsland = dynamic(() => import('@/app/_components/SignInIsland'), { ssr: false });
 
 export default function HomePage(): JSX.Element {
   const features = [
@@ -36,7 +38,7 @@ export default function HomePage(): JSX.Element {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl mb-6 shadow-lg">
               <Banknote className="w-10 h-10 text-white" aria-hidden="true" />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
               Bank o&apos;Bryan
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
@@ -77,7 +79,7 @@ export default function HomePage(): JSX.Element {
                   Sign in with your Google account to create your family banking experience
                 </CardDescription>
               </CardHeader>
-              <CardContent className="px-8 pb-8">
+               <CardContent className="px-8 pb-8">
                 {/* Client island renders the interactive button and handles redirects */}
                 <SignInIsland />
                 {/* SSR-visible CTA fallback for non-JS environments */}
@@ -89,9 +91,9 @@ export default function HomePage(): JSX.Element {
                 <div className="mt-6 text-center">
                   <p className="text-sm text-gray-500">
                     By signing in, you agree to our{' '}
-                    <Link href="/legal/terms" className="underline underline-offset-2 hover:text-gray-700">terms of service</Link>
+                    <Link prefetch={false} href="/legal/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-700">terms of service</Link>
                     {' '}and{' '}
-                    <Link href="/legal/privacy" className="underline underline-offset-2 hover:text-gray-700">privacy policy</Link>.
+                    <Link prefetch={false} href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-700">privacy policy</Link>.
                   </p>
                 </div>
               </CardContent>
@@ -102,3 +104,5 @@ export default function HomePage(): JSX.Element {
     </div>
   );
 }
+
+

@@ -18,7 +18,7 @@ export default function AuthCallbackPage() {
           if (typeof window !== 'undefined') {
             window.history.replaceState({}, document.title, window.location.pathname);
           }
-          router.replace('/');
+          router.replace('/dashboard');
           return;
         }
 
@@ -39,7 +39,7 @@ export default function AuthCallbackPage() {
           if (typeof window !== 'undefined') {
             window.history.replaceState({}, document.title, window.location.pathname);
           }
-          router.replace('/');
+          router.replace('/dashboard');
           return;
         }
 
@@ -58,7 +58,7 @@ export default function AuthCallbackPage() {
             if (typeof window !== 'undefined') {
               window.history.replaceState({}, document.title, window.location.pathname);
             }
-            router.replace('/');
+            router.replace('/dashboard');
             return;
           }
         }
@@ -70,7 +70,7 @@ export default function AuthCallbackPage() {
             if (typeof window !== 'undefined') {
               window.history.replaceState({}, document.title, window.location.pathname);
             }
-            router.replace('/');
+            router.replace('/dashboard');
           } else {
             setErrorMessage('Authentication timed out. Please try signing in again.');
           }

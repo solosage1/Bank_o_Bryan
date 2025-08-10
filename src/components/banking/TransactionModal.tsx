@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { format } from 'date-fns';
 import { CalendarDays, DollarSign, Minus, Plus } from 'lucide-react';
 
@@ -31,29 +30,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+import { transactionSchema, type TransactionFormData } from '@/lib/schemas/transaction';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
-const transactionSchema = z.object({
-  amount: z
-    .string()
-    .min(1, 'Amount is required')
-    .refine(
-      (val) => {
-        const num = parseFloat(val);
-        return !isNaN(num) && num > 0;
-      },
-      'Amount must be a positive number'
-    ),
-  description: z
-    .string()
-    .min(1, 'Description is required')
-    .max(200, 'Description must be less than 200 characters'),
-  transactionDate: z.date({
-    required_error: 'Transaction date is required',
-  }),
-});
-
-type TransactionFormData = z.infer<typeof transactionSchema>;
+// schema now lives in @/lib/schemas/transaction
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -63,6 +44,7 @@ interface TransactionModalProps {
   accountId: string;
   type: 'deposit' | 'withdrawal';
   onSuccess: () => void;
+  availableBalanceCents?: number;
 }
 
 export function TransactionModal({
@@ -72,13 +54,16 @@ export function TransactionModal({
   childName,
   accountId,
   type,
-  onSuccess
+  onSuccess,
+  availableBalanceCents
 }: TransactionModalProps) {
   const { parent } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
+    mode: 'onChange',
     defaultValues: {
       amount: '',
       description: '',
@@ -86,10 +71,24 @@ export function TransactionModal({
     },
   });
 
+  const amountStr = form.watch('amount');
+  const amountCents = (() => {
+    const num = parseFloat(amountStr || '0');
+    return Number.isFinite(num) ? Math.round(num * 100) : 0;
+  })();
+  const insufficientFunds = type === 'withdrawal' && availableBalanceCents != null && amountCents > availableBalanceCents;
+
   const onSubmit = async (data: TransactionFormData) => {
     if (!parent) return;
 
     try {
+      if (type === 'withdrawal' && availableBalanceCents != null) {
+        const cents = Math.round(parseFloat(data.amount) * 100);
+        if (cents > availableBalanceCents) {
+          form.setError('amount', { message: 'Insufficient funds' });
+          return;
+        }
+      }
       setIsSubmitting(true);
 
       const { error } = await supabase.rpc('process_transaction', {
@@ -124,6 +123,10 @@ export function TransactionModal({
       form.reset();
       onSuccess();
       onClose();
+      toast({
+        title: 'Success',
+        description: `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} of $${parseFloat(data.amount).toFixed(2)} processed for ${childName}.`
+      });
     } catch (error) {
       console.error('Transaction error:', error);
       form.setError('root', {
@@ -143,7 +146,7 @@ export function TransactionModal({
     <AnimatePresence>
       {isOpen && (
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto" onEscapeKeyDown={onClose}>
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -156,7 +159,7 @@ export function TransactionModal({
                     'w-8 h-8 rounded-full flex items-center justify-center',
                     type === 'deposit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                   )}>
-                    <ButtonIcon className="w-4 h-4" />
+                    <ButtonIcon aria-hidden="true" className="w-4 h-4" />
                   </div>
                   <span>{modalTitle}</span>
                 </DialogTitle>
@@ -173,9 +176,9 @@ export function TransactionModal({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Amount</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <div className="relative">
+                            <DollarSign aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <FormControl>
                             <Input
                               placeholder="0.00"
                               type="number"
@@ -185,11 +188,14 @@ export function TransactionModal({
                               className="pl-10"
                               {...field}
                             />
-                          </div>
-                        </FormControl>
+                          </FormControl>
+                        </div>
                         <FormDescription>
                           Enter the amount to {type}
                         </FormDescription>
+                        {insufficientFunds && (
+                          <div className="text-sm text-red-600">Cannot withdraw more than available balance.</div>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -209,7 +215,7 @@ export function TransactionModal({
                           />
                         </FormControl>
                         <FormDescription>
-                          Brief description of this transaction
+                          You can provide details about this transaction.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -237,7 +243,7 @@ export function TransactionModal({
                                 ) : (
                                   <span>Pick a date</span>
                                 )}
-                                <CalendarDays className="ml-auto h-4 w-4 opacity-50" />
+                                <CalendarDays aria-hidden="true" className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -245,7 +251,11 @@ export function TransactionModal({
                             <Calendar
                               mode="single"
                               selected={field.value}
-                              onSelect={field.onChange}
+                              onSelect={(date) => {
+                                if (date) {
+                                  form.setValue('transactionDate', date, { shouldValidate: true, shouldDirty: true });
+                                }
+                              }}
                               disabled={(date) =>
                                 date > new Date() || date < new Date('1900-01-01')
                               }
@@ -279,7 +289,7 @@ export function TransactionModal({
                     </Button>
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !form.formState.isValid || insufficientFunds}
                       className={cn('flex-1', buttonColor)}
                     >
                       {isSubmitting ? (
