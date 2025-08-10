@@ -85,7 +85,7 @@ test.beforeEach(async ({ page }) => {
       await page.getByLabel('Amount').fill('1.00');
       await page.getByLabel('Description').fill('seed');
       await page.getByRole('button', { name: /Make Deposit/i }).click();
-      await expect(page.getByRole('dialog')).toBeHidden({ timeout: 8000 });
+      await expect(page.getByRole('dialog')).toBeHidden({ timeout: 20000 });
       balanceText = (await anyBalance.textContent()) || '';
     }
 

@@ -25,8 +25,8 @@ const nextConfig = {
   ],
   experimental: {
     // Reduce bundle size by optimizing icon package imports
-    // Disabled due to build instability in CI with Radix/ESM graph; re-enable after upgrade
-    // optimizePackageImports: ['lucide-react'],
+    // If instability occurs, switch to modularizeImports below
+    optimizePackageImports: ['lucide-react'],
     esmExternals: 'loose',
   },
 };
