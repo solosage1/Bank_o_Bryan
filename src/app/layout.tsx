@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Providers from '@/app/_components/Providers';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bankobryan.netlify.app';
@@ -43,6 +43,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
   },
+};
+
+export const viewport: Viewport = {
   themeColor: '#ffffff',
 };
 

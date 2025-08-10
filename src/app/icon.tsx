@@ -1,11 +1,12 @@
 /* eslint-disable */
-import { ImageResponse } from 'next/server';
+import { ImageResponse } from 'next/og';
 
 export const size = {
   width: 512,
   height: 512,
 };
 export const contentType = 'image/png';
+export const runtime = 'edge';
 
 export default function Icon() {
   return new ImageResponse(
