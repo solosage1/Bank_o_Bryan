@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { format } from 'date-fns';
 import { CalendarDays, DollarSign, Minus, Plus } from 'lucide-react';
 
@@ -31,30 +30,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+import { transactionSchema, type TransactionFormData } from '@/lib/schemas/transaction';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-const transactionSchema = z.object({
-  amount: z
-    .string()
-    .min(1, 'Amount is required')
-    .refine(
-      (val) => {
-        const num = parseFloat(val);
-        return !isNaN(num) && num > 0;
-      },
-      'Amount must be a positive number'
-    ),
-  description: z
-    .string()
-    .min(1, 'Description is required')
-    .max(200, 'Description must be less than 200 characters'),
-  transactionDate: z.date({
-    required_error: 'Transaction date is required',
-  }),
-});
-
-type TransactionFormData = z.infer<typeof transactionSchema>;
+// schema now lives in @/lib/schemas/transaction
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -166,7 +146,7 @@ export function TransactionModal({
     <AnimatePresence>
       {isOpen && (
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto" onEscapeKeyDown={onClose}>
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -179,7 +159,7 @@ export function TransactionModal({
                     'w-8 h-8 rounded-full flex items-center justify-center',
                     type === 'deposit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                   )}>
-                    <ButtonIcon className="w-4 h-4" />
+                    <ButtonIcon aria-hidden="true" className="w-4 h-4" />
                   </div>
                   <span>{modalTitle}</span>
                 </DialogTitle>
@@ -196,9 +176,9 @@ export function TransactionModal({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Amount</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <div className="relative">
+                            <DollarSign aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <FormControl>
                             <Input
                               placeholder="0.00"
                               type="number"
@@ -208,8 +188,8 @@ export function TransactionModal({
                               className="pl-10"
                               {...field}
                             />
-                          </div>
-                        </FormControl>
+                          </FormControl>
+                        </div>
                         <FormDescription>
                           Enter the amount to {type}
                         </FormDescription>
@@ -235,7 +215,7 @@ export function TransactionModal({
                           />
                         </FormControl>
                         <FormDescription>
-                          Brief description of this transaction
+                          You can provide details about this transaction.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -263,7 +243,7 @@ export function TransactionModal({
                                 ) : (
                                   <span>Pick a date</span>
                                 )}
-                                <CalendarDays className="ml-auto h-4 w-4 opacity-50" />
+                                <CalendarDays aria-hidden="true" className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -271,7 +251,11 @@ export function TransactionModal({
                             <Calendar
                               mode="single"
                               selected={field.value}
-                              onSelect={field.onChange}
+                              onSelect={(date) => {
+                                if (date) {
+                                  form.setValue('transactionDate', date, { shouldValidate: true, shouldDirty: true });
+                                }
+                              }}
                               disabled={(date) =>
                                 date > new Date() || date < new Date('1900-01-01')
                               }

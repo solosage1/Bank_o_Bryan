@@ -139,7 +139,7 @@ export function BalanceTicker({
             animate={isAnimating ? { scale: [1, 1.2, 1] } : {}}
             transition={{ duration: 0.5 }}
           >
-            <DollarSign className={iconSizes[size]} />
+            <DollarSign aria-hidden="true" className={iconSizes[size]} />
           </motion.div>
         </div>
       )}
@@ -172,7 +172,7 @@ export function BalanceTicker({
                 isIncrease ? 'text-green-600' : 'text-red-600'
               )}
             >
-              <TrendingUp className={cn(
+              <TrendingUp aria-hidden="true" className={cn(
                 'w-3 h-3',
                 isDecrease && 'rotate-180'
               )} />

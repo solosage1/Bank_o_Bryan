@@ -20,6 +20,7 @@ import { useRedirectOnReady } from '@/hooks/useRedirectOnReady';
 import { supabase } from '@/lib/supabase';
 import { track } from '@/components/analytics/track';
 import { Toaster } from '@/components/ui/toaster';
+import { getBrowserTimeZone, TIMEZONES } from '@/lib/time';
 
 const MotionDiv = dynamic(async () => {
   const m = await import('framer-motion');
@@ -34,14 +35,7 @@ const familySchema = z.object({
 
 type FamilyFormData = z.infer<typeof familySchema>;
 
-const timezones = [
-  { value: 'America/New_York', label: 'Eastern Time (ET)' },
-  { value: 'America/Chicago', label: 'Central Time (CT)' },
-  { value: 'America/Denver', label: 'Mountain Time (MT)' },
-  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
-  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
-  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HST)' },
-];
+const timezones = TIMEZONES;
 
 export default function OnboardingPage() {
   const { user, refreshProfile } = useAuth();
@@ -56,14 +50,14 @@ export default function OnboardingPage() {
     resolver: zodResolver(familySchema),
     defaultValues: {
       familyName: '',
-      timezone: 'America/New_York',
+      timezone: getBrowserTimeZone() || 'America/New_York',
       siblingVisibility: true,
     },
   });
 
   // Ensure no stray autofill or stale state on mount
   useEffect(() => {
-    form.reset({ familyName: '', timezone: 'America/New_York', siblingVisibility: true });
+    form.reset({ familyName: '', timezone: getBrowserTimeZone() || 'America/New_York', siblingVisibility: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -223,7 +217,7 @@ export default function OnboardingPage() {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mx-auto mb-6"
             >
-              <Home className="w-8 h-8 text-white" />
+              <Home aria-hidden="true" className="w-8 h-8 text-white" />
             </MotionDiv>
             <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
               Welcome to Bank o&apos;Bryan!
@@ -240,7 +234,7 @@ export default function OnboardingPage() {
                   Family Name
                 </Label>
                 <div className="mt-2 relative">
-                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Users aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     id="familyName"
                     placeholder="e.g., The Johnson Family"
@@ -252,7 +246,7 @@ export default function OnboardingPage() {
                   />
                 </div>
                 {form.formState.errors.familyName && (
-                  <p className="mt-2 text-sm text-red-600">
+                  <p className="mt-2 text-sm text-red-600" role="alert">
                     {form.formState.errors.familyName.message}
                   </p>
                 )}
@@ -264,7 +258,7 @@ export default function OnboardingPage() {
                   Timezone
                 </Label>
                 <div className="mt-2 relative">
-                  <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
+                  <Clock aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
                   <Select 
                     onValueChange={(value) => form.setValue('timezone', value)}
                     defaultValue={form.getValues('timezone')}
@@ -282,7 +276,7 @@ export default function OnboardingPage() {
                   </Select>
                 </div>
                 {form.formState.errors.timezone && (
-                  <p className="mt-2 text-sm text-red-600">
+                  <p className="mt-2 text-sm text-red-600" role="alert">
                     {form.formState.errors.timezone.message}
                   </p>
                 )}
@@ -313,7 +307,7 @@ export default function OnboardingPage() {
               </div>
 
               {form.formState.errors.root && (
-                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md" role="alert">
                   {form.formState.errors.root.message}
                 </div>
               )}

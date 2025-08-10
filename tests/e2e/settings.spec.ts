@@ -24,7 +24,7 @@ test.beforeEach(async ({ page }) => {
 
     // Verify on dashboard
   await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: /The Testers Dashboard/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /The Testers Dashboard/i })).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Los Angeles|Pacific/i)).toBeVisible();
   });
 

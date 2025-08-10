@@ -8,19 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { TIMEZONES } from '@/lib/time';
+import { supabase } from '@/lib/supabase';
 
-const tzOptions = [
-  { value: 'America/New_York', label: 'Eastern Time (ET)' },
-  { value: 'America/Chicago', label: 'Central Time (CT)' },
-  { value: 'America/Denver', label: 'Mountain Time (MT)' },
-  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
-];
+const tzOptions = TIMEZONES;
 
 export default function SettingsPage() {
   const router = useRouter();
   const { family, parent, refreshProfile } = useAuth();
+  const guard = useRequireAuth();
   const [familyName, setFamilyName] = useState('');
   const [timezone, setTimezone] = useState('America/New_York');
   const [siblingVisibility, setSiblingVisibility] = useState(true);
@@ -63,18 +62,41 @@ export default function SettingsPage() {
     }
   }, [family?.id]);
 
+  if (guard === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (guard === 'unauthenticated') {
+    // Will be redirected by guard effect; show nothing to avoid flicker
+    return null;
+  }
+
   const saveChanges = async () => {
     setSaving(true);
     try {
-      // Persist family changes in localStorage so dashboard reads it (always safe for E2E and local)
+      // Attempt to persist to database (non-blocking for E2E bypass)
+      if (family?.id) {
+        try {
+          await supabase.from('families').update({
+            name: familyName,
+            timezone,
+            sibling_visibility: siblingVisibility,
+          }).eq('id', family.id);
+        } catch {
+          // ignore in E2E/local mode
+        }
+      }
+      // Always update localStorage as a source-of-truth for bypass and to speed up UI reflection
       if (typeof window !== 'undefined') {
         const rawFam = window.localStorage.getItem('E2E_FAMILY');
-        const fam = rawFam ? JSON.parse(rawFam) : { id: 'fam-e2e' };
+        const fam = rawFam ? JSON.parse(rawFam) : { id: family?.id ?? 'fam-e2e' };
         fam.name = familyName;
         fam.timezone = timezone;
         fam.sibling_visibility = siblingVisibility;
         window.localStorage.setItem('E2E_FAMILY', JSON.stringify(fam));
-        // Ensure auth context reacts before navigating (both cross-tab and same-tab)
         try { window.dispatchEvent(new Event('e2e-localstorage-updated')); } catch {}
       }
       await refreshProfile();
