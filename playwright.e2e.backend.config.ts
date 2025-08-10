@@ -23,6 +23,9 @@ const config: PlaywrightTestConfig = {
       ...(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
         ? { NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY }
         : {}),
+      ...(process.env.NEXT_PUBLIC_E2E_BACKEND_FALLBACK
+        ? { NEXT_PUBLIC_E2E_BACKEND_FALLBACK: process.env.NEXT_PUBLIC_E2E_BACKEND_FALLBACK }
+        : {}),
       ...(process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH
         ? { NEXT_PUBLIC_E2E_BYPASS_AUTH: process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH }
         : {}),
