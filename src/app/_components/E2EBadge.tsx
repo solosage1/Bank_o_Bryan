@@ -9,45 +9,54 @@ export default function E2EBadge() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
-  const handleDisable = React.useCallback(() => {
-    if (typeof window === 'undefined') return;
+  // Helper to synchronously strip ?e2e=1 from the URL
+  const stripE2EParam = React.useCallback((): boolean => {
+    if (typeof window === 'undefined') return false;
     try {
-      // Client navigation to strip param softly when possible
       const url = new URL(window.location.href);
       if (url.searchParams.has('e2e')) {
         url.searchParams.delete('e2e');
         const nextHref = `${url.pathname}${url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''}${url.hash || ''}`;
-        router.replace(nextHref);
+        window.history.replaceState(null, '', nextHref);
+        return true;
       }
     } catch {}
+    return false;
+  }, []);
+
+  // Strip ?e2e=1 on mount to avoid leaking the flag in address bar
+  React.useEffect(() => { stripE2EParam(); }, [stripE2EParam]);
+
+  const handleDisable = React.useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try { stripE2EParam(); } catch {}
     try { disableE2E(); } catch {}
     toast({ title: 'E2E disabled' });
-    // Fallback refresh in case history.replace didn’t trigger a full reload
-    setTimeout(() => {
-      try { if (typeof window !== 'undefined') window.location.reload(); } catch {}
-    }, 250);
-  }, [router]);
+    try {
+      requestAnimationFrame(() => {
+        setTimeout(() => { try { window.location.reload(); } catch {} }, 50);
+      });
+    } catch {
+      setTimeout(() => { try { window.location.reload(); } catch {} }, 100);
+    }
+  }, [stripE2EParam]);
 
   const handleDisableAndClear = React.useCallback(() => {
     if (typeof window === 'undefined') return;
-    try {
-      const url = new URL(window.location.href);
-      if (url.searchParams.has('e2e')) {
-        url.searchParams.delete('e2e');
-        const nextHref = `${url.pathname}${url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''}${url.hash || ''}`;
-        router.replace(nextHref);
-      }
-    } catch {}
+    try { stripE2EParam(); } catch {}
     try { disableE2EAndClear(); } catch {
-      // Fallback to explicit sequence
       try { clearE2ELocalData(); } catch {}
       try { disableE2E(); } catch {}
     }
     toast({ title: 'E2E disabled and local test data cleared' });
-    setTimeout(() => {
-      try { if (typeof window !== 'undefined') window.location.reload(); } catch {}
-    }, 250);
-  }, [router]);
+    try {
+      requestAnimationFrame(() => {
+        setTimeout(() => { try { window.location.reload(); } catch {} }, 50);
+      });
+    } catch {
+      setTimeout(() => { try { window.location.reload(); } catch {} }, 100);
+    }
+  }, [stripE2EParam]);
 
   if (!isE2EEnabled()) return null;
 

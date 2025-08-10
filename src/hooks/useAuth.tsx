@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { Parent, Family, AuthContextType } from '@/types';
 import { isE2EEnabled, ensureDefaultFamily, getFamily } from '@/lib/e2e';
+import { queryClient } from '@/lib/queryClient';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       const mod = await import('@/lib/supabase');
       await mod.signOut();
+      try { queryClient.clear(); } catch {}
       setUser(null);
       setParent(null);
       setFamily(null);

@@ -7,11 +7,13 @@ test.describe('@offline E2E badge quick actions', () => {
 
     // Open menu and click Disable E2E
     await page.getByLabel('E2E mode').getByRole('button', { name: 'Disable E2E options' }).click();
-    await page.getByRole('button', { name: 'Disable E2E' }).click();
+    await page.locator('#e2e-menu').waitFor();
+    await page.locator('#e2e-menu').getByRole('menuitem', { name: 'Disable E2E' }).click();
 
-    // The action triggers a reload; wait for navigation and verify url param removed
-    await page.waitForLoadState('load');
-    expect(page.url()).not.toMatch(/e2e=1/);
+    // The action triggers a reload; wait for navigation and verify url param removed deterministically
+    await page.waitForURL('**/*');
+    const hasParam = await page.evaluate(() => new URL(window.location.href).searchParams.has('e2e'));
+    expect(hasParam).toBeFalsy();
 
     // Badge should be hidden unless env forced it; if visible, skip
     const visible = await page.getByLabel('E2E mode').isVisible().catch(() => false);
@@ -31,10 +33,12 @@ test.describe('@offline E2E badge quick actions', () => {
 
     // Open menu and click Disable & Clear
     await page.getByLabel('E2E mode').getByRole('button', { name: 'Disable E2E options' }).click();
-    await page.getByRole('button', { name: 'Disable and clear local data' }).click();
+    await page.locator('#e2e-menu').waitFor();
+    await page.locator('#e2e-menu').getByRole('menuitem', { name: 'Disable and clear local data' }).click();
 
-    await page.waitForLoadState('load');
-    expect(page.url()).not.toMatch(/e2e=1/);
+    await page.waitForURL('**/*');
+    const hasParam2 = await page.evaluate(() => new URL(window.location.href).searchParams.has('e2e'));
+    expect(hasParam2).toBeFalsy();
 
     // Verify keys are cleared
     const ls = await page.evaluate(() => ({
