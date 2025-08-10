@@ -34,6 +34,9 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Activate pinned pnpm via Corepack
+        run: corepack prepare pnpm@9.0.0 --activate
+
       - name: Print pnpm version (from packageManager via Corepack)
         run: pnpm -v
 
