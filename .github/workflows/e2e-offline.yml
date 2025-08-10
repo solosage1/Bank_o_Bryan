@@ -25,9 +25,6 @@ jobs:
       - name: Print pnpm version (from packageManager via Corepack)
         run: pnpm -v
 
-      - name: Ensure pnpm@9 via Corepack
-        run: corepack prepare pnpm@9.0.0 --activate
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 

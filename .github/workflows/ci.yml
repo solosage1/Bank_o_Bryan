@@ -25,14 +25,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Enable Corepack (before setup-node to allow pnpm cache)
-        run: corepack enable
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Print pnpm version (from packageManager via Corepack)
         run: pnpm -v
@@ -45,32 +45,4 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-  e2e-backend:
-    name: E2E Backend
-    runs-on: ubuntu-latest
-    needs: build
-    env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      NEXT_PUBLIC_SITE_URL: http://localhost:3000
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
-      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
-    steps:
-      - uses: actions/checkout@v4
-      - run: corepack enable
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-      - run: pnpm -v
-      - run: pnpm install --frozen-lockfile
-      - name: Verify required envs present
-        run: |
-          for k in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY E2E_TEST_EMAIL E2E_TEST_PASSWORD; do
-            if [ -z "${!k}" ]; then echo "::error title=Missing env::$k is not set"; exit 1; else echo "$k is set"; fi
-          done
-      - run: npx playwright install --with-deps
-      - run: pnpm e2e:backend
 

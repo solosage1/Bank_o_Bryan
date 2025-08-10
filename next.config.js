@@ -20,6 +20,8 @@ const nextConfig = {
     'react-day-picker',
     'react-remove-scroll',
     'date-fns',
+    'use-callback-ref',
+    'react-style-singleton',
   ],
   experimental: {
     // Reduce bundle size by optimizing icon package imports
