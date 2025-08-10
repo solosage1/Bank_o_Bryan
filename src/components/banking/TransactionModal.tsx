@@ -90,6 +90,14 @@ export function TransactionModal({
     if (!parent) return;
 
     try {
+      // Guard against missing account id which would omit p_account_id in the RPC payload
+      if (!accountId) {
+        const message = 'Missing account ID for this transaction.';
+        form.setError('root', { message });
+        toast({ title: 'Transaction failed', description: message, variant: 'destructive' });
+        return;
+      }
+
       if (type === 'withdrawal' && availableBalanceCents != null) {
         const cents = Math.round(parseFloat(data.amount) * 100);
         if (cents > availableBalanceCents) {
@@ -178,12 +186,18 @@ export function TransactionModal({
     } catch (error) {
       console.error('Transaction error:', error);
       const err: any = error;
-      const details: string[] = [];
-      if (err?.message) details.push(String(err.message));
-      if (err?.code) details.push(`code: ${err.code}`);
-      if (err?.details) details.push(String(err.details));
-      if (err?.hint) details.push(String(err.hint));
-      const message = details.length ? details.join(' — ') : 'Failed to process transaction';
+      let message = 'Failed to process transaction';
+      const isMissingRpc = err?.code === 'PGRST202' || /Could not find the function\s+public\.process_transaction/i.test(String(err?.message || ''));
+      if (isMissingRpc) {
+        message = 'Transaction service is unavailable. Ensure database migrations are applied (process_transaction RPC) and try again.';
+      } else {
+        const parts: string[] = [];
+        if (err?.message) parts.push(String(err.message));
+        if (err?.code) parts.push(`code: ${err.code}`);
+        if (err?.details) parts.push(String(err.details));
+        if (err?.hint) parts.push(String(err.hint));
+        if (parts.length) message = parts.join(' — ');
+      }
       form.setError('root', { message });
       toast({ title: 'Transaction failed', description: message, variant: 'destructive' });
     } finally {

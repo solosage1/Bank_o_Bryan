@@ -427,7 +427,25 @@ export default function DashboardClient() {
             )}
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm" data-testid="settings-button" onClick={() => router.push('/settings')}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="settings-button"
+              onClick={() => {
+                if (isBypass && typeof window !== 'undefined') {
+                  window.location.assign('/settings');
+                  return;
+                }
+                try {
+                  router.push('/settings');
+                } catch (_) {
+                  if (typeof window !== 'undefined') {
+                    window.location.assign('/settings');
+                  }
+                }
+              }}
+            >
               <Settings aria-hidden="true" className="w-4 h-4 mr-2" />
               Settings
             </Button>
