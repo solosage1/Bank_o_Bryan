@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 // NOTE: This is a high-level happy-path test and assumes a test user session.
 // In CI, you can mock Supabase auth via setting a cookie/localStorage or by stubbing network calls.
 
-test.describe('Onboarding happy path', () => {
+test.describe('@backend Onboarding happy path', () => {
   test('Creates a family and redirects to dashboard', async ({ page }) => {
     // Precondition: ensure E2E bypass is active client-side before load
     await page.addInitScript(() => localStorage.setItem('E2E_BYPASS', '1'));

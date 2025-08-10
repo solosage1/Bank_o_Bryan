@@ -17,7 +17,7 @@ function isChildrenGet(req: Request) {
   return req.method() === 'GET' && /\/rest\/v1\/children/.test(req.url());
 }
 
-test.describe('Dashboard Add Child', () => {
+test.describe('@backend Dashboard Add Child', () => {
   test('success: create child + account closes modal, toasts, and list refreshes', async ({ page }) => {
     await primeBypass(page);
 

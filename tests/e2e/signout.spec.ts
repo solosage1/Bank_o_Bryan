@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { primeBypassAndFamily, gotoE2E } from './utils/prime';
 
-test.describe('Sign out flow', () => {
+test.describe('@backend Sign out flow', () => {
   test('Clicking Sign Out logs out and returns to landing', async ({ page }) => {
     await primeBypassAndFamily(page);
     await gotoE2E(page, '/dashboard');

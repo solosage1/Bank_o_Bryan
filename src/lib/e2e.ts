@@ -274,4 +274,54 @@ export async function fetchTransactionsLocally(accountId: string): Promise<Array
 
 export { dispatchLocalStorageUpdated };
 
+/** Removes E2E_BYPASS and strips `e2e=1` from the URL, then reloads (browser-only). */
+export function disableE2E(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem('E2E_BYPASS');
+  } catch {}
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('e2e')) {
+      url.searchParams.delete('e2e');
+      // Preserve hash
+      const nextHref = `${url.pathname}${url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''}${url.hash || ''}`;
+      window.history.replaceState(null, '', nextHref);
+    }
+  } catch {}
+  try {
+    // Force a full reload to ensure all client state is reset
+    window.location.reload();
+  } catch {}
+}
+
+/** Clears all known E2E_* keys and dispatches the `e2e-localstorage-updated` event. */
+export function clearE2ELocalData(): void {
+  if (typeof window === 'undefined') return;
+  const keysToClear = [
+    'E2E_BYPASS',
+    'E2E_PARENT',
+    'E2E_FAMILY',
+    'E2E_CHILDREN',
+    'E2E_ACCOUNTS',
+    'E2E_TRANSACTIONS',
+    'E2E_TIERS',
+    'E2E_TICKER_SPEED',
+  ];
+  try {
+    for (const key of keysToClear) {
+      try { window.localStorage.removeItem(key); } catch {}
+    }
+  } finally {
+    dispatchLocalStorageUpdated();
+  }
+}
+
+/** Clears E2E local data and then disables E2E (browser-only). */
+export function disableE2EAndClear(): void {
+  if (typeof window === 'undefined') return;
+  try { clearE2ELocalData(); } catch {}
+  try { disableE2E(); } catch {}
+}
+
 

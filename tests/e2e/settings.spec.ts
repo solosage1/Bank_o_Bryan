@@ -3,7 +3,7 @@ import { primeBypassAndFamily, gotoE2E } from './utils/prime';
 
 // NOTE: Uses E2E bypass per app logic to avoid real auth
 
-test.describe('Settings — family + interest tiers', () => {
+test.describe('@backend Settings — family + interest tiers', () => {
 test.beforeEach(async ({ page }) => {
   await primeBypassAndFamily(page, { familyName: 'Settings Test Family' });
   await gotoE2E(page, '/dashboard');

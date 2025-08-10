@@ -13,7 +13,7 @@ function isTxnsGet(req: Request) {
   return req.method() === 'GET' && /\/rest\/v1\/transactions/.test(req.url());
 }
 
-test.describe('Dashboard → Child Detail Navigation', () => {
+test.describe('@backend Dashboard → Child Detail Navigation', () => {
   test('clicking a child card navigates to detail page showing name, nickname, balance and txns', async ({ page }) => {
     // Prime bypass and family
     await page.addInitScript(() => localStorage.setItem('E2E_BYPASS', '1'));

@@ -9,7 +9,7 @@ function isRpcProcessTransaction(req: Request) {
   return req.method() === 'POST' && /\/rest\/v1\/rpc\/process_transaction/.test(req.url());
 }
 
-test.describe('Transactions: deposit and withdrawal', () => {
+test.describe('@backend Transactions: deposit and withdrawal', () => {
   test('deposit: submit valid form closes modal, toasts, and updates UI', async ({ page }) => {
     await primeBypassAndFamily(page);
     await page.goto('/onboarding?e2e=1');

@@ -9,8 +9,8 @@ const baseWebServer = Array.isArray((base as any).webServer)
 
 const config: PlaywrightTestConfig = {
   ...base,
-  // Run the entire e2e suite; the offline-specific spec will validate banners/toggles.
-  testIgnore: [],
+  // Run only tests tagged @offline to make intent explicit
+  grep: /@offline/,
   webServer: ({
     ...(baseWebServer || {}),
     env: {

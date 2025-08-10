@@ -9,8 +9,8 @@ const baseWebServer = Array.isArray((base as any).webServer)
 
 const config: PlaywrightTestConfig = {
   ...base,
-  // Exclude the offline-only validation suite.
-  testIgnore: ['**/e2e_offline.spec.ts'],
+  // Exclude offline-tagged tests, but allow general and @backend tests
+  grepInvert: /@offline/,
   webServer: ({
     ...(baseWebServer || {}),
     env: {

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Sign-in CTA', () => {
+test.describe('@backend Sign-in CTA', () => {
   test('Clicking Continue with Google initiates OAuth (navigates or opens popup)', async ({ page, context }) => {
     // Ensure bypass flag before load
     await page.addInitScript(() => localStorage.setItem('E2E_BYPASS', '1'));

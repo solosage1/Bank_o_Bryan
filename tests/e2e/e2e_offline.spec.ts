@@ -67,7 +67,7 @@ async function waitForLsAccountBalance(page: Page, accountId: string, expectedCe
   }, [accountId, expectedCents], { timeout: 8000 });
 }
 
-test.describe('Phase 1 QA — Dev E2E/Offline', () => {
+test.describe('@offline Phase 1 QA — Dev E2E/Offline', () => {
   test.beforeEach(async ({ page }) => {
     // Fresh profile per test; also clear LS early
     await clearLocalStorage(page);

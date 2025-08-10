@@ -15,7 +15,10 @@ Quick reference and audit checklist for the client-only E2E/Offline fallback (Ph
 
 - Query: append `?e2e=1` to any URL (e.g., `/dashboard?e2e=1`). This sets `localStorage.E2E_BYPASS = '1'` for persistence.
 - Env: set `NEXT_PUBLIC_E2E=1` (or legacy `NEXT_PUBLIC_E2E_BYPASS_AUTH=1`).
-- Disable: remove `E2E_BYPASS` from `localStorage` and reload.
+- Disable: use the in-app "E2E mode" badge quick action.
+  - Disable E2E: removes `E2E_BYPASS`, strips `?e2e=1` from the URL, and reloads the current route.
+  - Disable & Clear local data: also clears all `E2E_*` keys (`E2E_BYPASS`, `E2E_PARENT`, `E2E_FAMILY`, `E2E_CHILDREN`, `E2E_ACCOUNTS`, `E2E_TRANSACTIONS`, `E2E_TIERS`, `E2E_TICKER_SPEED`).
+  - On change, a toast confirms the action and the banner disappears.
 
 ## Phase 3 (CI)
 
@@ -27,6 +30,16 @@ Quick reference and audit checklist for the client-only E2E/Offline fallback (Ph
   - Offline: `.github/workflows/e2e-offline.yml` (config sets `NEXT_PUBLIC_E2E=1`; uploads `playwright-report/` and `test-results/`).
   - Backend: `.github/workflows/e2e-backend.yml` (injects Supabase secrets; excludes offline-only spec; uploads `playwright-report/`).
 - Base config neutrality: `playwright.config.ts` has no unconditional E2E toggles; offline/backend configs provide env.
+
+## Test tags
+
+- Use `@offline` for offline-only acceptance tests and `@backend` for backend‑integrated or network‑mocked tests.
+- Examples:
+  - `test.describe('@offline Dashboard — Add Child', ...)`
+  - `test('@backend Transactions RPC shape ...', ...)`
+- Config filtering:
+  - Offline config: runs only `@offline` tests via `grep: /@offline/`.
+  - Backend config: excludes offline tests via `grepInvert: /@offline/` so untagged and `@backend` tests run.
 
 ## Visual Indicator
 
