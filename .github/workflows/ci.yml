@@ -66,6 +66,11 @@ jobs:
           cache: 'pnpm'
       - run: pnpm -v
       - run: pnpm install --frozen-lockfile
+      - name: Verify required envs present
+        run: |
+          for k in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY E2E_TEST_EMAIL E2E_TEST_PASSWORD; do
+            if [ -z "${!k}" ]; then echo "::error title=Missing env::$k is not set"; exit 1; else echo "$k is set"; fi
+          done
       - run: npx playwright install --with-deps
       - run: pnpm e2e:backend
 
