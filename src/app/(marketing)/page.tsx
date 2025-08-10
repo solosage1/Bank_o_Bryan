@@ -38,7 +38,7 @@ export default function HomePage(): JSX.Element {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl mb-6 shadow-lg">
               <Banknote className="w-10 h-10 text-white" aria-hidden="true" />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
               Bank o&apos;Bryan
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">

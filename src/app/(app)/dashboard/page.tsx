@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Settings, LogOut, Users, DollarSign } from 'lucide-react';
+import { Plus, Settings, LogOut, Users, DollarSign, Loader2 } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { BalanceTicker } from '@/components/banking/BalanceTicker';
@@ -18,6 +19,7 @@ import { supabase } from '@/lib/supabase';
 import type { ChildWithAccount } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useFamilyInterestTiers } from '@/hooks/useFamilyInterestTiers';
+import { getBrowserTimeZone, getTimezoneLabel, TIMEZONES } from '@/lib/time';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -42,6 +44,7 @@ export default function DashboardPage() {
   const [newChild, setNewChild] = useState<{ name: string; age?: string; nickname?: string }>({ name: '', age: '', nickname: '' });
   const [isCreatingChild, setIsCreatingChild] = useState<boolean>(false);
   const [createChildError, setCreateChildError] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState<boolean>(false);
 
   // Fetch active tiers for ticker display
   const { tiers: familyTiers } = useFamilyInterestTiers(family?.id);
@@ -91,7 +94,7 @@ export default function DashboardPage() {
   }, []);
 
   const effectiveFamilyName = lsFamilyName || family?.name || '';
-  const effectiveTimezone = lsTimezone || family?.timezone || '';
+  const effectiveTimezone = lsTimezone || family?.timezone || getBrowserTimeZone() || '';
 
   // Fetch children and their accounts (stabilize on familyId to avoid effect loops)
   const familyId = family?.id;
@@ -395,7 +398,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               {effectiveFamilyName} Dashboard
             </h1>
             <p className="text-gray-600">
@@ -410,18 +413,44 @@ export default function DashboardPage() {
             </p>
             {effectiveTimezone && (
               <div className="text-sm text-gray-500 mt-1">
-                Timezone: {effectiveTimezone.replace('America/', '').replace('_', ' ')}
+                Timezone: {getTimezoneLabel(effectiveTimezone) || effectiveTimezone}
               </div>
             )}
           </div>
           <div className="flex items-center space-x-3">
             <Button variant="outline" size="sm" onClick={() => router.push('/settings')}>
-              <Settings className="w-4 h-4 mr-2" />
+              <Settings aria-hidden="true" className="w-4 h-4 mr-2" />
               Settings
             </Button>
-            <Button variant="outline" size="sm" onClick={async () => { await signOut(); router.replace('/'); }}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={signingOut}
+              onClick={async () => {
+                setSigningOut(true);
+                try {
+                  await signOut();
+                  router.replace('/');
+                  toast({ title: 'Signed out', description: 'You have been signed out.', duration: 3000 });
+                } catch (error) {
+                  console.error('Sign out error:', error);
+                  toast({ title: 'Sign out failed', description: String(error), variant: 'destructive' });
+                } finally {
+                  setSigningOut(false);
+                }
+              }}
+            >
+              {signingOut ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Signing out…
+                </>
+              ) : (
+                <>
+                   <LogOut aria-hidden="true" className="w-4 h-4 mr-2" />
+                  Sign Out
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -434,7 +463,7 @@ export default function DashboardPage() {
             <h2 data-testid="children-header" className="text-2xl font-bold text-gray-900">Children&apos;s Accounts</h2>
             {children.length > 0 && (
               <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600" onClick={openAddChild}>
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus aria-hidden="true" className="w-4 h-4 mr-2" />
                 Add Child
               </Button>
             )}
@@ -444,7 +473,7 @@ export default function DashboardPage() {
             <Card className="border-2 border-dashed border-gray-300">
               <CardContent className="text-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-gray-400" />
+                  <Users aria-hidden="true" className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No children added yet
@@ -453,7 +482,7 @@ export default function DashboardPage() {
                   Add your first child to start their banking journey!
                 </p>
                 <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600" onClick={openAddChild}>
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus aria-hidden="true" className="w-4 h-4 mr-2" />
                   Add Child
                 </Button>
               </CardContent>
@@ -468,19 +497,39 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
-                    <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-200 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-600">
+                    <Card
+                      className="group border-0 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition transform duration-200 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-600 cursor-pointer"
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`View ${child.name} details`}
+                      onClick={() => router.push(`/child/${child.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          router.push(`/child/${child.id}`);
+                        }
+                      }}
+                    >
                       <CardHeader className="pb-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">
+                            <span aria-hidden="true" className="text-white font-bold text-lg">
                               {child.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
                             <CardTitle className="text-lg">
-                              <a href={`/child/${child.id}`} className="outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 rounded">
+                              <Link
+                                href={`/child/${child.id}`}
+                                aria-label={`View ${child.name} details`}
+                                data-testid={`child-link-${child.id}`}
+                                className="outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 rounded group-hover:underline"
+                              >
                                 {child.name}
-                              </a>
+                                {child.nickname ? (
+                                  <span className="text-base text-gray-500 font-normal"> ({child.nickname})</span>
+                                ) : null}
+                              </Link>
                             </CardTitle>
                             {child.age != null && String(child.age).trim() !== '' && (
                               <CardDescription>Age {child.age}</CardDescription>
@@ -491,7 +540,7 @@ export default function DashboardPage() {
                       <CardContent className="space-y-4">
                         {child.account ? (
                           <>
-                            <div className="bg-gray-50 rounded-xl p-4">
+                             <div className="bg-gray-50 rounded-xl p-4">
                               <BalanceTicker
                                 accountId={child.account.id}
                                 initialBalanceCents={Math.round((child.account.balance || 0) * 100)}
@@ -505,28 +554,34 @@ export default function DashboardPage() {
                               <Button
                                 size="sm"
                                 className="flex-1 bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600"
-                                onClick={() => openTransactionModal(
-                                  child.id,
-                                  child.name,
-                                  child.account!.id,
-                                  'deposit'
-                                )}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openTransactionModal(
+                                    child.id,
+                                    child.name,
+                                    child.account!.id,
+                                    'deposit'
+                                  );
+                                }}
                               >
-                                <Plus className="w-4 h-4 mr-1" />
+                                 <Plus aria-hidden="true" className="w-4 h-4 mr-1" />
                                 Deposit
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="flex-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600"
-                                onClick={() => openTransactionModal(
-                                  child.id,
-                                  child.name,
-                                  child.account!.id,
-                                  'withdrawal'
-                                )}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openTransactionModal(
+                                    child.id,
+                                    child.name,
+                                    child.account!.id,
+                                    'withdrawal'
+                                  );
+                                }}
                               >
-                                <Plus className="w-4 h-4 mr-1 rotate-45" />
+                                 <Plus aria-hidden="true" className="w-4 h-4 mr-1 rotate-45" />
                                 Withdraw
                               </Button>
                             </div>
@@ -534,7 +589,7 @@ export default function DashboardPage() {
                         ) : (
                           <div className="text-center py-4">
                             <p className="text-gray-500 mb-3">No account created</p>
-                            <Button size="sm" variant="outline" onClick={() => createAccountForChild(child.id, child.name)}>
+                            <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); createAccountForChild(child.id, child.name); }}>
                               Create Account
                             </Button>
                           </div>
@@ -568,6 +623,7 @@ export default function DashboardPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Child</DialogTitle>
+            <DialogDescription>Enter basic details to create a new child account.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">

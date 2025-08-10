@@ -4,7 +4,7 @@ export async function primeBypassAndFamily(
   page: Page,
   opts: { familyName?: string; timezone?: string } = {}
 ) {
-  const { familyName = 'E2E Family', timezone = 'America/New_York' } = opts;
+  const { familyName = 'E2E Family', timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York' } = opts;
   await page.addInitScript(([name, tz]) => {
     try {
       localStorage.setItem('E2E_BYPASS', '1');
