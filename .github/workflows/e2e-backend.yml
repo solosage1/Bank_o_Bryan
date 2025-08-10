@@ -17,14 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable Corepack (before setup-node to allow pnpm cache)
+        run: corepack enable
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Print pnpm version (from packageManager via Corepack)
         run: pnpm -v
