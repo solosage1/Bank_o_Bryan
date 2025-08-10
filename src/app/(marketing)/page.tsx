@@ -30,7 +30,7 @@ export default function HomePage(): JSX.Element {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-indigo-100">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -38,10 +38,10 @@ export default function HomePage(): JSX.Element {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl mb-6 shadow-lg">
               <Banknote className="w-10 h-10 text-white" aria-hidden="true" />
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
               Bank o&apos;Bryan
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
               A playful virtual family bank designed for kids aged 10-14. Teach financial responsibility through interactive banking experiences.
             </p>
           </div>
@@ -62,7 +62,7 @@ export default function HomePage(): JSX.Element {
                         </div>
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                          <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                          <p className="text-gray-700 leading-relaxed">{feature.description}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -72,10 +72,10 @@ export default function HomePage(): JSX.Element {
             </div>
 
             {/* Login Card */}
-            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader className="text-center pb-6">
                 <CardTitle className="text-2xl font-bold text-gray-900">Get Started Today</CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardDescription className="text-gray-700">
                   Sign in with your Google account to create your family banking experience
                 </CardDescription>
               </CardHeader>
@@ -89,11 +89,11 @@ export default function HomePage(): JSX.Element {
                   </p>
                 </noscript>
                 <div className="mt-6 text-center">
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-700">
                     By signing in, you agree to our{' '}
-                    <Link prefetch={false} href="/legal/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-700">terms of service</Link>
+                    <Link prefetch={false} href="/legal/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 hover:text-gray-800">terms of service</Link>
                     {' '}and{' '}
-                    <Link prefetch={false} href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-700">privacy policy</Link>.
+                    <Link prefetch={false} href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 hover:text-gray-800">privacy policy</Link>.
                   </p>
                 </div>
               </CardContent>

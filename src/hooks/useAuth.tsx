@@ -31,6 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         try {
           window.localStorage.removeItem('E2E_BYPASS');
+          window.localStorage.removeItem('E2E_PARENT');
+          window.localStorage.removeItem('E2E_FAMILY');
+          window.localStorage.removeItem('E2E_CHILDREN');
+          window.localStorage.removeItem('E2E_ACCOUNTS');
+          // Explicitly clear any cached timezone/name used by dashboard to avoid stale display on logout
+          try { window.dispatchEvent(new Event('e2e-localstorage-updated')); } catch {}
         } catch (_) {
           // noop
         }

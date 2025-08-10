@@ -94,7 +94,19 @@ export default function DashboardPage() {
   }, []);
 
   const effectiveFamilyName = lsFamilyName || family?.name || '';
-  const effectiveTimezone = lsTimezone || family?.timezone || getBrowserTimeZone() || '';
+  const [effectiveTimezone, setEffectiveTimezone] = useState<string>('');
+  useEffect(() => {
+    // Compute timezone on client to avoid SSR defaulting to server TZ
+    const tz = (lsTimezone || family?.timezone || getBrowserTimeZone() || '').trim();
+    setEffectiveTimezone(tz);
+  }, [lsTimezone, family?.timezone]);
+
+  // Immediately clear any sensitive state when auth context disappears
+  useEffect(() => {
+    if (!user || !family) {
+      setChildren([]);
+    }
+  }, [user, family]);
 
   // Fetch children and their accounts (stabilize on familyId to avoid effect loops)
   const familyId = family?.id;
@@ -214,6 +226,15 @@ export default function DashboardPage() {
     setIsAddChildOpen(true);
   };
 
+  const handleAddChildOpenChange = (open: boolean) => {
+    setIsAddChildOpen(open);
+    if (open) {
+      // Always reset form state on open to avoid leaking prior values
+      setNewChild({ name: '', age: '', nickname: '' });
+      setCreateChildError(null);
+    }
+  };
+
   const createChildAndAccount = async () => {
     if (!family && !isBypass) return;
     if (!newChild.name.trim()) return;
@@ -272,6 +293,7 @@ export default function DashboardPage() {
         track('child_added', { phase: 'success', child_id: childRow.id });
         toast({ title: 'Child created', description: `${childRow.name} was added to your family.` });
         setIsAddChildOpen(false);
+        setNewChild({ name: '', age: '', nickname: '' });
         await fetchChildren();
         return;
       }
@@ -302,6 +324,7 @@ export default function DashboardPage() {
           window.localStorage.setItem('E2E_ACCOUNTS', JSON.stringify(lsAccounts));
           toast({ title: 'Child created', description: `${childRow.name} was added to your family.` });
           setIsAddChildOpen(false);
+          setNewChild({ name: '', age: '', nickname: '' });
           await fetchChildren();
           return;
         } catch (_) {
@@ -364,6 +387,11 @@ export default function DashboardPage() {
     );
   }
 
+  // Do not render dashboard contents while unauthenticated; navigation effect will redirect
+  if (!isBypass && !user) {
+    return null;
+  }
+
   // Graceful state: signed-in but no family (should have been redirected but in case guard missed)
   if (!isBypass && user && !family) {
     return (
@@ -418,7 +446,7 @@ export default function DashboardPage() {
             )}
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm" onClick={() => router.push('/settings')}>
+            <Button variant="outline" size="sm" data-testid="settings-button" onClick={() => router.push('/settings')}>
               <Settings aria-hidden="true" className="w-4 h-4 mr-2" />
               Settings
             </Button>
@@ -430,7 +458,19 @@ export default function DashboardPage() {
                 setSigningOut(true);
                 try {
                   await signOut();
+                  // Proactively clear any in-memory data to avoid privacy leakage
+                  setChildren([]);
                   router.replace('/');
+                  // Hard fallback in case client-side navigation is interrupted
+                  if (typeof window !== 'undefined') {
+                    setTimeout(() => {
+                      try {
+                        if (window.location.pathname !== '/') {
+                          window.location.assign('/');
+                        }
+                      } catch {}
+                    }, 250);
+                  }
                   toast({ title: 'Signed out', description: 'You have been signed out.', duration: 3000 });
                 } catch (error) {
                   console.error('Sign out error:', error);
@@ -517,23 +557,53 @@ export default function DashboardPage() {
                               {child.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
-                          <div>
-                            <CardTitle className="text-lg">
-                              <Link
-                                href={`/child/${child.id}`}
-                                aria-label={`View ${child.name} details`}
-                                data-testid={`child-link-${child.id}`}
-                                className="outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 rounded group-hover:underline"
+                          <div className="flex items-start justify-between w-full">
+                            <div>
+                              <CardTitle className="text-lg">
+                                <Link
+                                  href={`/child/${child.id}`}
+                                  aria-label={`View ${child.name} details`}
+                                  data-testid={`child-link-${child.id}`}
+                                  className="outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 rounded group-hover:underline"
+                                  onClick={(e) => {
+                                    if (isBypass) {
+                                      e.preventDefault();
+                                      if (typeof window !== 'undefined') {
+                                        window.location.assign(`/child/${child.id}`);
+                                      }
+                                    }
+                                  }}
+                                >
+                                  {child.name}
+                                  {child.nickname ? (
+                                    <span className="text-base text-gray-500 font-normal"> ({child.nickname})</span>
+                                  ) : null}
+                                </Link>
+                              </CardTitle>
+                              {child.age != null && String(child.age).trim() !== '' && (
+                                <CardDescription>Age {child.age}</CardDescription>
+                              )}
+                            </div>
+                            <div>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label={`Copy link for ${child.name}`}
+                                title="Copy link"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  try {
+                                    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                                    const link = `${origin}/child/${child.id}`;
+                                    if (navigator?.clipboard?.writeText) {
+                                      navigator.clipboard.writeText(link);
+                                    }
+                                  } catch (_) { /* noop */ }
+                                }}
                               >
-                                {child.name}
-                                {child.nickname ? (
-                                  <span className="text-base text-gray-500 font-normal"> ({child.nickname})</span>
-                                ) : null}
-                              </Link>
-                            </CardTitle>
-                            {child.age != null && String(child.age).trim() !== '' && (
-                              <CardDescription>Age {child.age}</CardDescription>
-                            )}
+                                <DollarSign className="w-4 h-4" aria-hidden="true" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </CardHeader>
@@ -619,7 +689,7 @@ export default function DashboardPage() {
       )}
 
       {/* Add Child Modal */}
-      <Dialog open={isAddChildOpen} onOpenChange={setIsAddChildOpen}>
+      <Dialog open={isAddChildOpen} onOpenChange={handleAddChildOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Child</DialogTitle>
@@ -664,7 +734,17 @@ export default function DashboardPage() {
               </div>
             )}
             <div className="flex justify-end space-x-2 pt-2">
-              <Button variant="outline" onClick={() => setIsAddChildOpen(false)} disabled={isCreatingChild}>Cancel</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAddChildOpen(false);
+                  setNewChild({ name: '', age: '', nickname: '' });
+                  setCreateChildError(null);
+                }}
+                disabled={isCreatingChild}
+              >
+                Cancel
+              </Button>
               <Button onClick={createChildAndAccount} disabled={isCreatingChild || !newChild.name.trim()}>
                 {isCreatingChild ? (
                   <span className="flex items-center space-x-2">

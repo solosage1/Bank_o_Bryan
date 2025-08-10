@@ -11,6 +11,8 @@ export const TIMEZONES: TimezoneOption[] = [
 ];
 
 export function getBrowserTimeZone(): string | null {
+  // Only resolve timezone in the browser to avoid leaking server/edge timezone (e.g., PT on Netlify)
+  if (typeof window === 'undefined') return null;
   if (typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat !== 'undefined') {
     try {
       return Intl.DateTimeFormat().resolvedOptions().timeZone || null;

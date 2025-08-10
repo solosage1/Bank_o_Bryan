@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -71,6 +71,13 @@ export function TransactionModal({
     },
   });
 
+  // Ensure initial default values are validated so isValid reflects them
+  useEffect(() => {
+    // Trigger once after mount to calculate initial isValid with defaults
+    form.trigger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const amountStr = form.watch('amount');
   const amountCents = (() => {
     const num = parseFloat(amountStr || '0');
@@ -91,14 +98,38 @@ export function TransactionModal({
       }
       setIsSubmitting(true);
 
-      const { error } = await supabase.rpc('process_transaction', {
+      // Prefer PRD signature (cents-based) and fall back to legacy (decimal-based)
+      const prdPayload: any = {
         p_account_id: accountId,
-        p_type: type,
-        p_amount: parseFloat(data.amount),
+        p_type: type, // PRD accepts text and casts to enum
+        p_amount_cents: Math.round(parseFloat(data.amount) * 100),
         p_description: data.description,
         p_parent_id: parent.id,
-        p_transaction_date: format(data.transactionDate, 'yyyy-MM-dd')
-      });
+        p_transaction_date: format(data.transactionDate, 'yyyy-MM-dd'),
+        p_require_confirm: false,
+      };
+
+      let { error } = await supabase.rpc('process_transaction', prdPayload as any);
+
+      if (error) {
+        // If PRD function isn't available/matching, try legacy signature
+        const looksLikeMissingOrMismatch =
+          (error as any)?.code === 'PGRST202' ||
+          /No function/i.test((error as any)?.message || '') ||
+          /not found|404/i.test((error as any)?.details || '');
+
+        if (looksLikeMissingOrMismatch) {
+          const legacyPayload: any = {
+            p_account_id: accountId,
+            p_type: type,
+            p_amount: parseFloat(data.amount),
+            p_description: data.description,
+            p_parent_id: parent.id,
+            p_transaction_date: format(data.transactionDate, 'yyyy-MM-dd'),
+          };
+          ({ error } = await supabase.rpc('process_transaction', legacyPayload as any));
+        }
+      }
 
       if (error) throw error;
 
@@ -129,9 +160,15 @@ export function TransactionModal({
       });
     } catch (error) {
       console.error('Transaction error:', error);
-      form.setError('root', {
-        message: error instanceof Error ? error.message : 'Failed to process transaction'
-      });
+      const err: any = error;
+      const details: string[] = [];
+      if (err?.message) details.push(String(err.message));
+      if (err?.code) details.push(`code: ${err.code}`);
+      if (err?.details) details.push(String(err.details));
+      if (err?.hint) details.push(String(err.hint));
+      const message = details.length ? details.join(' — ') : 'Failed to process transaction';
+      form.setError('root', { message });
+      toast({ title: 'Transaction failed', description: message, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
@@ -140,7 +177,9 @@ export function TransactionModal({
   const modalTitle = type === 'deposit' ? 'Make Deposit' : 'Make Withdrawal';
   const modalDescription = `${type === 'deposit' ? 'Add money to' : 'Remove money from'} ${childName}'s account`;
   const ButtonIcon = type === 'deposit' ? Plus : Minus;
-  const buttonColor = type === 'deposit' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
+  const buttonColor = type === 'deposit'
+    ? 'bg-green-600 hover:bg-green-700 text-white'
+    : 'bg-red-600 hover:bg-red-700 text-white';
 
   return (
     <AnimatePresence>
